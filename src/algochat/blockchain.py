@@ -6,7 +6,7 @@ and indexers. Implementations can use any Algorand SDK.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from .models import DiscoveredKey

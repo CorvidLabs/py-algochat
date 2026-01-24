@@ -6,7 +6,6 @@ key substitution attacks by proving key ownership.
 """
 
 import hashlib
-from typing import Tuple
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,

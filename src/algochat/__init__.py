@@ -9,7 +9,6 @@ from .crypto import encrypt_message, decrypt_message
 from .envelope import encode_envelope, decode_envelope, is_chat_message, ChatEnvelope
 from .types import (
     DecryptedContent,
-    SIGNATURE_SIZE as _SIG_SIZE,  # Already exported from signature module
     MINIMUM_PAYMENT,
     AlgoChatError,
     InvalidPublicKeyError,

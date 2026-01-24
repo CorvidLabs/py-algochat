@@ -6,7 +6,7 @@ caching public keys, and persisting encryption keys.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
 import asyncio

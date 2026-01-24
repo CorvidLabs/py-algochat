@@ -5,7 +5,7 @@ This module provides the primary interface for sending and receiving
 encrypted messages using the AlgoChat protocol.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 import asyncio
@@ -25,8 +25,6 @@ from .models import (
     DiscoveredKey,
     Message,
     MessageDirection,
-    SendOptions,
-    SendResult,
 )
 from .queue import SendQueue
 from .storage import (
@@ -37,7 +35,6 @@ from .storage import (
     PublicKeyCache,
 )
 from .types import (
-    AlgoChatError,
     InvalidEnvelopeError,
     PublicKeyNotFoundError,
     DecryptionError,
