@@ -29,3 +29,85 @@ KEY_DERIVATION_INFO = b"x25519-key"
 # Encryption info prefixes
 ENCRYPTION_INFO_PREFIX = b"AlgoChatV1"
 SENDER_KEY_INFO_PREFIX = b"AlgoChatV1-SenderKey"
+
+# Signature constants
+SIGNATURE_SIZE = 64
+
+# Transaction constants
+MINIMUM_PAYMENT = 1000
+
+
+# Exception types
+class AlgoChatError(Exception):
+    """Base exception for AlgoChat errors."""
+    pass
+
+
+class InvalidPublicKeyError(AlgoChatError):
+    """Invalid public key format or length."""
+    pass
+
+
+class KeyDerivationError(AlgoChatError):
+    """Key derivation failed."""
+    pass
+
+
+class InvalidSignatureError(AlgoChatError):
+    """Invalid signature format or verification failed."""
+    pass
+
+
+class EncryptionError(AlgoChatError):
+    """Encryption failed."""
+    pass
+
+
+class DecryptionError(AlgoChatError):
+    """Decryption failed."""
+    pass
+
+
+class InvalidEnvelopeError(AlgoChatError):
+    """Invalid envelope format."""
+    pass
+
+
+class IndexerNotConfiguredError(AlgoChatError):
+    """Indexer not configured."""
+    pass
+
+
+class PublicKeyNotFoundError(AlgoChatError):
+    """Public key not found for address."""
+    pass
+
+
+class InvalidRecipientError(AlgoChatError):
+    """Invalid recipient address."""
+    pass
+
+
+class TransactionError(AlgoChatError):
+    """Transaction failed."""
+    pass
+
+
+class InsufficientBalanceError(AlgoChatError):
+    """Insufficient balance."""
+    pass
+
+
+class KeyNotFoundError(AlgoChatError):
+    """Key not found in storage."""
+    pass
+
+
+class StorageError(AlgoChatError):
+    """Storage operation failed."""
+    pass
+
+
+class MessageNotFoundError(AlgoChatError):
+    """Message not found."""
+    pass
