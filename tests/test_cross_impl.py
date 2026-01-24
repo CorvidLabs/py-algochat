@@ -4,7 +4,6 @@ These tests verify that Python can decrypt messages encrypted by Swift and TypeS
 implementations, ensuring full protocol compatibility.
 """
 
-import os
 from pathlib import Path
 import pytest
 from algochat.keys import derive_keys_from_seed

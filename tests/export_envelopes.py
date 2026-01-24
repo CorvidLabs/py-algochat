@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Export Python-generated envelopes for cross-implementation testing."""
 
-import os
 from pathlib import Path
 import sys
 
