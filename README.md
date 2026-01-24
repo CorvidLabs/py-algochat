@@ -1,5 +1,12 @@
 # py-algochat
 
+[![CI](https://img.shields.io/github/actions/workflow/status/CorvidLabs/py-algochat/ci.yml?label=CI&branch=main)](https://github.com/CorvidLabs/py-algochat/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/py-algochat)](https://pypi.org/project/py-algochat/)
+[![License](https://img.shields.io/github/license/CorvidLabs/py-algochat)](https://github.com/CorvidLabs/py-algochat/blob/main/LICENSE)
+[![Version](https://img.shields.io/github/v/release/CorvidLabs/py-algochat)](https://github.com/CorvidLabs/py-algochat/releases)
+
+> **Pre-1.0 Notice**: This library is under active development. The API may change between minor versions until 1.0.
+
 Python implementation of the AlgoChat protocol for encrypted messaging on Algorand.
 
 ## Installation
@@ -51,6 +58,8 @@ The protocol supports bidirectional decryption, allowing senders to decrypt thei
 This implementation is fully compatible with:
 - [swift-algochat](https://github.com/CorvidLabs/swift-algochat) (Swift)
 - [ts-algochat](https://github.com/CorvidLabs/ts-algochat) (TypeScript)
+- [rs-algochat](https://github.com/CorvidLabs/rs-algochat) (Rust)
+- [kt-algochat](https://github.com/CorvidLabs/kt-algochat) (Kotlin)
 
 ## License
 
