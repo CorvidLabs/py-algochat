@@ -1,6 +1,5 @@
 """Key derivation and management for AlgoChat."""
 
-import os
 from typing import Tuple
 
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
