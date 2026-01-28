@@ -53,6 +53,78 @@ AlgoChat uses:
 
 The protocol supports bidirectional decryption, allowing senders to decrypt their own messages.
 
+## PSK v1.1 Protocol
+
+The PSK (Pre-Shared Key) v1.1 protocol adds a shared secret layer on top of the standard X25519 key agreement, providing forward secrecy through a two-level ratchet system.
+
+```python
+from algochat import (
+    derive_keys_from_seed,
+    derive_psk_at_counter,
+    encrypt_psk_message,
+    decrypt_psk_message,
+    encode_psk_envelope,
+    decode_psk_envelope,
+    is_psk_message,
+    PSKState,
+    advance_send_counter,
+    validate_counter,
+    record_receive,
+    create_psk_exchange_uri,
+    parse_psk_exchange_uri,
+)
+
+# Derive keys
+sender_private, sender_public = derive_keys_from_seed(sender_seed)
+recipient_private, recipient_public = derive_keys_from_seed(recipient_seed)
+
+# Shared PSK (exchanged out-of-band)
+initial_psk = os.urandom(32)
+
+# Manage counter state
+state = PSKState()
+counter, state = advance_send_counter(state)
+
+# Derive ratcheted PSK for this counter
+current_psk = derive_psk_at_counter(initial_psk, counter)
+
+# Encrypt with PSK
+envelope = encrypt_psk_message(
+    "Hello with PSK!",
+    sender_private,
+    sender_public,
+    recipient_public,
+    current_psk,
+    counter,
+)
+
+# Encode for transmission
+encoded = encode_psk_envelope(envelope)
+assert is_psk_message(encoded)
+
+# Decode and decrypt
+decoded = decode_psk_envelope(encoded)
+psk_for_counter = derive_psk_at_counter(initial_psk, decoded.ratchet_counter)
+text = decrypt_psk_message(decoded, recipient_private, recipient_public, psk_for_counter)
+
+# Exchange PSK via URI
+uri = create_psk_exchange_uri(address, initial_psk, label="My Chat")
+parsed = parse_psk_exchange_uri(uri)
+```
+
+### PSK Ratchet
+
+The ratchet derives unique keys per message using a two-level hierarchy:
+- **Session PSK**: Derived from initial PSK + session index (every 100 messages)
+- **Position PSK**: Derived from session PSK + position within session
+
+### PSK Counter State
+
+Counter state tracks send/receive counters with replay protection:
+- Rejects duplicate counters (replay attacks)
+- Maintains a sliding window (200 messages) for out-of-order delivery
+- Prunes old counters automatically
+
 ## Cross-Implementation Compatibility
 
 This implementation is fully compatible with:
