@@ -1,7 +1,7 @@
 """Tests for PSK (Pre-Shared Key) v1.1 protocol."""
 
 import pytest
-from algochat.keys import derive_keys_from_seed, public_key_to_bytes
+from algochat.keys import derive_keys_from_seed
 from algochat.psk_types import (
     PSK_VERSION,
     PSK_PROTOCOL_ID,
