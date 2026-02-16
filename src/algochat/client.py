@@ -40,7 +40,6 @@ from .storage import (
 from .types import (
     InvalidEnvelopeError,
     PublicKeyNotFoundError,
-    DecryptionError,
 )
 
 
