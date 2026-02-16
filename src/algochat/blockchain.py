@@ -9,8 +9,25 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
+import base64
+
 from .models import DiscoveredKey
 from .signature import verify_encryption_key_bytes
+
+
+def _decode_algorand_address(address: str) -> bytes:
+    """Decodes an Algorand address to extract the 32-byte Ed25519 public key.
+
+    Algorand addresses are base32-encoded: 32 bytes public key + 4 bytes checksum.
+
+    Args:
+        address: Algorand address string
+
+    Returns:
+        32-byte Ed25519 public key
+    """
+    decoded = base64.b32decode(address + "=" * ((8 - len(address) % 8) % 8))
+    return decoded[:32]
 
 
 @dataclass
@@ -250,7 +267,9 @@ def _parse_key_announcement(note: bytes, address: str) -> Optional[DiscoveredKey
         # Has signature, verify it
         signature = note[32:96]
         try:
-            is_verified = verify_encryption_key_bytes(public_key, public_key, signature)
+            # Decode the Algorand address to get the Ed25519 public key
+            ed25519_public_key = _decode_algorand_address(address)
+            is_verified = verify_encryption_key_bytes(public_key, ed25519_public_key, signature)
         except Exception:
             is_verified = False
 

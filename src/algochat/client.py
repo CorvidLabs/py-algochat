@@ -17,6 +17,9 @@ from .blockchain import (
     NoteTransaction,
     discover_encryption_key,
 )
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
+
 from .crypto import encrypt_message, decrypt_message
 from .envelope import encode_envelope, decode_envelope, is_chat_message
 from .keys import derive_keys_from_seed
@@ -37,7 +40,6 @@ from .storage import (
 from .types import (
     InvalidEnvelopeError,
     PublicKeyNotFoundError,
-    DecryptionError,
 )
 
 
@@ -85,8 +87,8 @@ class AlgoChat:
         self,
         address: str,
         ed25519_public_key: bytes,
-        encryption_private_key: bytes,
-        encryption_public_key: bytes,
+        encryption_private_key: X25519PrivateKey,
+        encryption_public_key: X25519PublicKey,
         config: AlgoChatConfig,
         algod: AlgodClient,
         indexer: IndexerClient,
@@ -138,9 +140,13 @@ class AlgoChat:
         # Store the encryption key
         await key_storage.store(encryption_private_key, address, False)
 
+        # Derive the Ed25519 public key from the seed (private key)
+        ed25519_private = Ed25519PrivateKey.from_private_bytes(seed)
+        ed25519_public_key = ed25519_private.public_key().public_bytes_raw()
+
         return cls(
             address=address,
-            ed25519_public_key=seed,  # The seed is also the Ed25519 public key in Algorand
+            ed25519_public_key=ed25519_public_key,
             encryption_private_key=encryption_private_key,
             encryption_public_key=encryption_public_key,
             config=config,
@@ -195,19 +201,18 @@ class AlgoChat:
 
     def encrypt(self, message: str, recipient_public_key: bytes) -> bytes:
         """Encrypts a message for a recipient."""
-        ciphertext = encrypt_message(
-            message.encode("utf-8"),
-            recipient_public_key,
+        from .keys import public_key_from_bytes
+
+        recipient_key = public_key_from_bytes(recipient_public_key)
+
+        envelope = encrypt_message(
+            message,
             self._encryption_private_key,
-        )
-
-        envelope = encode_envelope(
-            ciphertext,
             self._encryption_public_key,
-            recipient_public_key,
+            recipient_key,
         )
 
-        return envelope
+        return encode_envelope(envelope)
 
     def decrypt(self, envelope: bytes, sender_public_key: bytes) -> str:
         """Decrypts a message from a sender."""
@@ -216,16 +221,17 @@ class AlgoChat:
 
         decoded = decode_envelope(envelope)
 
-        plaintext = decrypt_message(
-            decoded.ciphertext,
-            sender_public_key,
+        result = decrypt_message(
+            decoded,
             self._encryption_private_key,
+            self._encryption_public_key,
         )
 
-        try:
-            return plaintext.decode("utf-8")
-        except UnicodeDecodeError as e:
-            raise DecryptionError(f"Invalid UTF-8: {e}")
+        if result is None:
+            # Key-publish payload
+            return ""
+
+        return result.text
 
     async def process_transaction(self, tx: NoteTransaction) -> Optional[Message]:
         """Processes a transaction and extracts any chat message."""
