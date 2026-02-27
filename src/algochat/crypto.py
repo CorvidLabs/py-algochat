@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 
 from .types import (
     DecryptedContent,
+    EncryptionError,
+    DecryptionError,
     ENCRYPTION_INFO_PREFIX,
     SENDER_KEY_INFO_PREFIX,
     MAX_PAYLOAD_SIZE,
@@ -18,16 +20,6 @@ from .types import (
 )
 from .keys import generate_ephemeral_keypair, x25519_ecdh, public_key_to_bytes, public_key_from_bytes
 from .envelope import ChatEnvelope
-
-
-class EncryptionError(Exception):
-    """Raised when encryption fails."""
-    pass
-
-
-class DecryptionError(Exception):
-    """Raised when decryption fails."""
-    pass
 
 
 def encrypt_message(

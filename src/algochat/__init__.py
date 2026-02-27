@@ -25,6 +25,8 @@ from .types import (
     KeyNotFoundError,
     StorageError,
     MessageNotFoundError,
+    PSKEncryptionError,
+    PSKDecryptionError,
 )
 from .signature import (
     sign_encryption_key,
@@ -106,8 +108,6 @@ from .psk_exchange import (
 from .psk_crypto import (
     encrypt_psk_message,
     decrypt_psk_message,
-    PSKEncryptionError,
-    PSKDecryptionError,
 )
 
 __version__ = "0.1.0"
