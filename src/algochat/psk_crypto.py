@@ -16,17 +16,7 @@ from .keys import (
     public_key_to_bytes,
     public_key_from_bytes,
 )
-from .types import NONCE_SIZE
-
-
-class PSKEncryptionError(Exception):
-    """Raised when PSK encryption fails."""
-    pass
-
-
-class PSKDecryptionError(Exception):
-    """Raised when PSK decryption fails."""
-    pass
+from .types import NONCE_SIZE, PSKEncryptionError, PSKDecryptionError
 
 
 def encrypt_psk_message(

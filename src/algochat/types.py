@@ -111,3 +111,13 @@ class StorageError(AlgoChatError):
 class MessageNotFoundError(AlgoChatError):
     """Message not found."""
     pass
+
+
+class PSKEncryptionError(EncryptionError):
+    """PSK encryption failed."""
+    pass
+
+
+class PSKDecryptionError(DecryptionError):
+    """PSK decryption failed."""
+    pass
