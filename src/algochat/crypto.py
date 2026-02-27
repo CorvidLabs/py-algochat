@@ -12,7 +12,6 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 from .types import (
     DecryptedContent,
     EncryptionError,
-    DecryptionError,
     ENCRYPTION_INFO_PREFIX,
     SENDER_KEY_INFO_PREFIX,
     MAX_PAYLOAD_SIZE,
