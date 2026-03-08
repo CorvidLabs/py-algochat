@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 
 from algochat.client import AlgoChat, AlgoChatConfig
 from algochat.blockchain import AlgorandConfig, NoteTransaction
-from algochat.keys import derive_keys_from_seed, public_key_to_bytes
+from algochat.keys import public_key_to_bytes
 from algochat.models import PSKContact, MessageDirection
 from algochat.psk_envelope import is_psk_message
 from algochat.envelope import is_chat_message
@@ -323,7 +323,6 @@ class TestProcessTransactionPSK:
 
         # Mock discover_key for Bob to find Alice's key
         alice_pub_bytes = public_key_to_bytes(alice._encryption_public_key)
-        from algochat.models import DiscoveredKey
         bob._indexer.search_transactions = AsyncMock(return_value=[])
 
         # Pre-populate cache
