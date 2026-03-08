@@ -162,6 +162,32 @@ class Conversation:
 
 
 @dataclass
+class PSKContact:
+    """A contact with a pre-shared key for PSK v1.1 encrypted messaging.
+
+    Stores the initial PSK and tracks ratchet state for replay protection.
+    """
+
+    address: str
+    """The contact's Algorand address."""
+
+    initial_psk: bytes
+    """The initial pre-shared key (32 bytes)."""
+
+    label: Optional[str] = None
+    """Optional human-readable label for this contact."""
+
+    send_counter: int = 0
+    """Next counter to use when sending."""
+
+    peer_last_counter: int = -1
+    """Highest counter received from the peer."""
+
+    seen_counters: set = field(default_factory=set)
+    """Recently seen counters for replay protection."""
+
+
+@dataclass
 class DiscoveredKey:
     """Result of discovering a user's encryption key."""
 

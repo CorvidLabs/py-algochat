@@ -22,13 +22,19 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 
 from .crypto import encrypt_message, decrypt_message
 from .envelope import encode_envelope, decode_envelope, is_chat_message
-from .keys import derive_keys_from_seed
+from .keys import derive_keys_from_seed, public_key_from_bytes
 from .models import (
     Conversation,
     DiscoveredKey,
     Message,
     MessageDirection,
+    PSKContact,
 )
+from .psk_crypto import encrypt_psk_message, decrypt_psk_message
+from .psk_envelope import encode_psk_envelope, decode_psk_envelope, is_psk_message
+from .psk_ratchet import derive_psk_at_counter
+from .psk_state import PSKState, validate_counter, record_receive, advance_send_counter
+from .psk_exchange import create_psk_exchange_uri, parse_psk_exchange_uri
 from .queue import SendQueue
 from .storage import (
     EncryptionKeyStorage,
@@ -40,6 +46,7 @@ from .storage import (
 from .types import (
     InvalidEnvelopeError,
     PublicKeyNotFoundError,
+    PSKEncryptionError,
 )
 
 
@@ -107,6 +114,7 @@ class AlgoChat:
         self._public_key_cache = PublicKeyCache()
         self._send_queue = SendQueue()
         self._conversations: list[Conversation] = []
+        self._psk_contacts: dict[str, PSKContact] = {}
         self._lock = asyncio.Lock()
 
     @classmethod
@@ -199,6 +207,77 @@ class AlgoChat:
 
         return key
 
+    # --- PSK Contact Management ---
+
+    def add_psk_contact(
+        self, address: str, psk: bytes, label: Optional[str] = None
+    ) -> PSKContact:
+        """Register a PSK contact for encrypted messaging.
+
+        Args:
+            address: The contact's Algorand address.
+            psk: The pre-shared key (32 bytes).
+            label: Optional human-readable label.
+
+        Returns:
+            The created PSKContact.
+        """
+        if len(psk) != 32:
+            raise ValueError("PSK must be 32 bytes")
+
+        contact = PSKContact(address=address, initial_psk=psk, label=label)
+        self._psk_contacts[address] = contact
+        return contact
+
+    def add_psk_contact_from_uri(self, uri: str) -> PSKContact:
+        """Register a PSK contact from an exchange URI.
+
+        Args:
+            uri: The PSK exchange URI (algochat-psk://v1?...).
+
+        Returns:
+            The created PSKContact.
+        """
+        parsed = parse_psk_exchange_uri(uri)
+        return self.add_psk_contact(
+            address=parsed["address"],
+            psk=parsed["psk"],
+            label=parsed.get("label"),
+        )
+
+    def remove_psk_contact(self, address: str) -> bool:
+        """Remove a PSK contact.
+
+        Returns:
+            True if the contact was removed, False if not found.
+        """
+        return self._psk_contacts.pop(address, None) is not None
+
+    def get_psk_contact(self, address: str) -> Optional[PSKContact]:
+        """Get a PSK contact by address."""
+        return self._psk_contacts.get(address)
+
+    @property
+    def psk_contacts(self) -> list[PSKContact]:
+        """Returns all PSK contacts."""
+        return list(self._psk_contacts.values())
+
+    def create_psk_exchange_uri(
+        self, psk: bytes, label: Optional[str] = None
+    ) -> str:
+        """Create a PSK exchange URI for sharing with a contact.
+
+        Args:
+            psk: The pre-shared key (32 bytes).
+            label: Optional human-readable label.
+
+        Returns:
+            The PSK exchange URI string.
+        """
+        return create_psk_exchange_uri(self._address, psk, label)
+
+    # --- Standard Encryption ---
+
     def encrypt(self, message: str, recipient_public_key: bytes) -> bytes:
         """Encrypts a message for a recipient."""
         from .keys import public_key_from_bytes
@@ -233,10 +312,119 @@ class AlgoChat:
 
         return result.text
 
+    # --- PSK Encryption ---
+
+    def encrypt_psk(self, message: str, recipient_address: str, recipient_public_key: bytes) -> bytes:
+        """Encrypt a message using PSK v1.1 protocol.
+
+        Automatically manages the ratchet counter for the contact.
+
+        Args:
+            message: The message to encrypt.
+            recipient_address: The recipient's Algorand address.
+            recipient_public_key: The recipient's X25519 public key (32 bytes).
+
+        Returns:
+            Encoded PSK envelope bytes.
+
+        Raises:
+            PSKEncryptionError: If no PSK contact exists for the address.
+        """
+        contact = self._psk_contacts.get(recipient_address)
+        if contact is None:
+            raise PSKEncryptionError(
+                f"No PSK contact for {recipient_address}"
+            )
+
+        recipient_key = public_key_from_bytes(recipient_public_key)
+
+        # Advance counter
+        state = PSKState(
+            send_counter=contact.send_counter,
+            peer_last_counter=contact.peer_last_counter,
+            seen_counters=set(contact.seen_counters),
+        )
+        counter, new_state = advance_send_counter(state)
+        contact.send_counter = new_state.send_counter
+
+        # Derive PSK for this counter
+        current_psk = derive_psk_at_counter(contact.initial_psk, counter)
+
+        envelope = encrypt_psk_message(
+            message,
+            self._encryption_private_key,
+            self._encryption_public_key,
+            recipient_key,
+            current_psk,
+            counter,
+        )
+
+        return encode_psk_envelope(envelope)
+
+    def decrypt_psk(self, data: bytes, sender_address: str) -> str:
+        """Decrypt a PSK v1.1 protocol message.
+
+        Validates the ratchet counter and updates contact state.
+
+        Args:
+            data: The encoded PSK envelope bytes.
+            sender_address: The sender's Algorand address.
+
+        Returns:
+            Decrypted message text.
+
+        Raises:
+            PSKDecryptionError: If decryption or counter validation fails.
+        """
+        from .types import PSKDecryptionError
+
+        contact = self._psk_contacts.get(sender_address)
+        if contact is None:
+            raise PSKDecryptionError(
+                f"No PSK contact for {sender_address}"
+            )
+
+        envelope = decode_psk_envelope(data)
+
+        # Validate counter
+        state = PSKState(
+            send_counter=contact.send_counter,
+            peer_last_counter=contact.peer_last_counter,
+            seen_counters=set(contact.seen_counters),
+        )
+        if not validate_counter(state, envelope.ratchet_counter):
+            raise PSKDecryptionError(
+                f"Invalid ratchet counter: {envelope.ratchet_counter}"
+            )
+
+        # Derive PSK for this counter
+        current_psk = derive_psk_at_counter(
+            contact.initial_psk, envelope.ratchet_counter
+        )
+
+        result = decrypt_psk_message(
+            envelope,
+            self._encryption_private_key,
+            self._encryption_public_key,
+            current_psk,
+        )
+
+        # Update contact state after successful decryption
+        new_state = record_receive(state, envelope.ratchet_counter)
+        contact.peer_last_counter = new_state.peer_last_counter
+        contact.seen_counters = new_state.seen_counters
+
+        return result
+
     async def process_transaction(self, tx: NoteTransaction) -> Optional[Message]:
-        """Processes a transaction and extracts any chat message."""
-        # Check if this is a chat message
-        if not is_chat_message(tx.note):
+        """Processes a transaction and extracts any chat message.
+
+        Automatically detects whether the message uses standard or PSK protocol.
+        """
+        is_standard = is_chat_message(tx.note)
+        is_psk = is_psk_message(tx.note)
+
+        if not is_standard and not is_psk:
             return None
 
         # Determine direction
@@ -247,22 +435,19 @@ class AlgoChat:
         else:
             return None  # Not relevant to us
 
-        # Get the other party's address and key
-        if direction == MessageDirection.SENT:
-            other_address = tx.receiver
-            key = await self.discover_key(tx.receiver)
-            if key is None:
-                raise PublicKeyNotFoundError(f"Key not found for {tx.receiver}")
-            other_key = key.public_key
-        else:
-            other_address = tx.sender
-            key = await self.discover_key(tx.sender)
-            if key is None:
-                raise PublicKeyNotFoundError(f"Key not found for {tx.sender}")
-            other_key = key.public_key
+        # Get the other party's address
+        other_address = tx.receiver if direction == MessageDirection.SENT else tx.sender
 
-        # Decrypt the message
-        content = self.decrypt(tx.note, other_key)
+        # Decrypt based on protocol type
+        if is_psk:
+            # PSK messages use the contact's PSK for decryption
+            content = self.decrypt_psk(tx.note, other_address)
+        else:
+            # Standard messages need the other party's public key
+            key = await self.discover_key(other_address)
+            if key is None:
+                raise PublicKeyNotFoundError(f"Key not found for {other_address}")
+            content = self.decrypt(tx.note, key.public_key)
 
         # Create message
         timestamp = datetime.fromtimestamp(tx.round_time)
