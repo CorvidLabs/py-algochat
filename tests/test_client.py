@@ -1,9 +1,7 @@
 """Tests for the AlgoChat client."""
 
 import pytest
-from datetime import datetime
 from typing import Optional
-from unittest.mock import AsyncMock
 
 from algochat.blockchain import (
     AlgorandConfig,
@@ -15,17 +13,9 @@ from algochat.blockchain import (
     TransactionInfo,
 )
 from algochat.client import AlgoChat, AlgoChatConfig
-from algochat.keys import derive_keys_from_seed, public_key_to_bytes
-from algochat.models import (
-    Conversation,
-    DiscoveredKey,
-    Message,
-    MessageDirection,
-)
-from algochat.storage import (
-    InMemoryKeyStorage,
-    InMemoryMessageCache,
-)
+from algochat.keys import public_key_to_bytes
+from algochat.models import MessageDirection
+from algochat.storage import InMemoryKeyStorage
 from algochat.types import (
     InvalidEnvelopeError,
     PublicKeyNotFoundError,
@@ -179,7 +169,7 @@ class TestFromSeed:
     @pytest.mark.asyncio
     async def test_stores_key_in_storage(self):
         storage = InMemoryKeyStorage()
-        client = await AlgoChat.from_seed(
+        await AlgoChat.from_seed(
             seed=ALICE_SEED,
             address=ALICE_ADDRESS,
             config=make_config(),
@@ -415,7 +405,6 @@ class TestProcessTransaction:
         bob = await make_client(seed=BOB_SEED, address=BOB_ADDRESS)
 
         bob_pub = public_key_to_bytes(bob._encryption_public_key)
-        alice_pub = public_key_to_bytes(alice._encryption_public_key)
 
         # Alice encrypts a message for Bob
         envelope = alice.encrypt("Hello Bob!", bob_pub)
@@ -584,7 +573,6 @@ class TestProcessTransaction:
         alice = await make_client(seed=ALICE_SEED, address=ALICE_ADDRESS)
         bob = await make_client(seed=BOB_SEED, address=BOB_ADDRESS)
 
-        bob_pub = public_key_to_bytes(bob._encryption_public_key)
         # Don't cache Bob's key — discovery will also fail (empty indexer)
 
         envelope = bob.encrypt("No key!", public_key_to_bytes(alice._encryption_public_key))

@@ -5,7 +5,6 @@ from typing import Optional
 
 from algochat.blockchain import (
     AlgorandConfig,
-    AlgodClient,
     IndexerClient,
     NoteTransaction,
     SuggestedParams,
@@ -16,7 +15,7 @@ from algochat.blockchain import (
     discover_encryption_key,
 )
 from algochat.keys import derive_keys_from_seed, public_key_to_bytes
-from algochat.signature import sign_encryption_key_bytes
+from algochat.signature import sign_encryption_key
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 
@@ -160,7 +159,7 @@ class TestParseKeyAnnouncement:
         enc_pub_bytes = public_key_to_bytes(encryption_public_key)
 
         # Sign the encryption key with the Ed25519 key
-        signature = sign_encryption_key_bytes(enc_pub_bytes, seed)
+        signature = sign_encryption_key(enc_pub_bytes, ed25519_private)
 
         # Build the announcement note: 32-byte key + 64-byte signature
         note = enc_pub_bytes + signature
