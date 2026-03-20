@@ -15,7 +15,6 @@ from algochat.blockchain import (
 from algochat.client import AlgoChat, AlgoChatConfig
 from algochat.keys import public_key_to_bytes
 from algochat.models import MessageDirection
-from algochat.psk_state import PSKState
 from algochat.storage import InMemoryKeyStorage
 from algochat.types import (
     InvalidEnvelopeError,
