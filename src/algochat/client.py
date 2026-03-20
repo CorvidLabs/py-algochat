@@ -22,13 +22,17 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 
 from .crypto import encrypt_message, decrypt_message
 from .envelope import encode_envelope, decode_envelope, is_chat_message
-from .keys import derive_keys_from_seed
+from .keys import derive_keys_from_seed, public_key_from_bytes, public_key_to_bytes
 from .models import (
     Conversation,
     DiscoveredKey,
     Message,
     MessageDirection,
 )
+from .psk_crypto import encrypt_psk_message, decrypt_psk_message
+from .psk_envelope import encode_psk_envelope, decode_psk_envelope, is_psk_message
+from .psk_ratchet import derive_psk_at_counter
+from .psk_state import PSKState, validate_counter, record_receive, advance_send_counter
 from .queue import SendQueue
 from .storage import (
     EncryptionKeyStorage,
@@ -39,6 +43,7 @@ from .storage import (
 )
 from .types import (
     InvalidEnvelopeError,
+    PSKDecryptionError,
     PublicKeyNotFoundError,
 )
 
@@ -108,6 +113,7 @@ class AlgoChat:
         self._send_queue = SendQueue()
         self._conversations: list[Conversation] = []
         self._lock = asyncio.Lock()
+        self._psk_channels: dict[str, tuple[bytes, PSKState]] = {}  # address -> (psk, state)
 
     @classmethod
     async def from_seed(
@@ -199,11 +205,42 @@ class AlgoChat:
 
         return key
 
-    def encrypt(self, message: str, recipient_public_key: bytes) -> bytes:
-        """Encrypts a message for a recipient."""
-        from .keys import public_key_from_bytes
+    def encrypt(
+        self,
+        message: str,
+        recipient_public_key: bytes,
+        psk: Optional[bytes] = None,
+    ) -> bytes:
+        """Encrypts a message for a recipient.
 
+        Args:
+            message: The plaintext message.
+            recipient_public_key: Recipient's X25519 public key (32 bytes).
+            psk: Optional pre-shared key (32 bytes). If provided, uses PSK v1.1 protocol.
+
+        Returns:
+            Encoded envelope bytes.
+        """
         recipient_key = public_key_from_bytes(recipient_public_key)
+
+        if psk is not None:
+            # Use PSK v1.1 protocol
+            recipient_address = self._address_for_key(recipient_public_key)
+            state = self._get_psk_state(recipient_address, psk)
+            counter, new_state = advance_send_counter(state)
+            current_psk = derive_psk_at_counter(psk, counter)
+
+            envelope = encrypt_psk_message(
+                message,
+                self._encryption_private_key,
+                self._encryption_public_key,
+                recipient_key,
+                current_psk,
+                counter,
+            )
+
+            self._set_psk_state(recipient_address, psk, new_state)
+            return encode_psk_envelope(envelope)
 
         envelope = encrypt_message(
             message,
@@ -214,12 +251,31 @@ class AlgoChat:
 
         return encode_envelope(envelope)
 
-    def decrypt(self, envelope: bytes, sender_public_key: bytes) -> str:
-        """Decrypts a message from a sender."""
-        if not is_chat_message(envelope):
+    def decrypt(
+        self,
+        envelope_bytes: bytes,
+        sender_public_key: bytes = b"",
+        psk: Optional[bytes] = None,
+    ) -> str:
+        """Decrypts a message.
+
+        Automatically detects whether the envelope uses standard v1 or PSK v1.1 protocol.
+
+        Args:
+            envelope_bytes: The encoded envelope bytes.
+            sender_public_key: Sender's public key (only needed for standard v1).
+            psk: Optional pre-shared key (32 bytes). Required if envelope is PSK v1.1.
+
+        Returns:
+            Decrypted message text.
+        """
+        if is_psk_message(envelope_bytes):
+            return self._decrypt_psk(envelope_bytes, psk)
+
+        if not is_chat_message(envelope_bytes):
             raise InvalidEnvelopeError("Not an AlgoChat message")
 
-        decoded = decode_envelope(envelope)
+        decoded = decode_envelope(envelope_bytes)
 
         result = decrypt_message(
             decoded,
@@ -233,10 +289,112 @@ class AlgoChat:
 
         return result.text
 
+    def _decrypt_psk(self, envelope_bytes: bytes, psk: Optional[bytes] = None) -> str:
+        """Decrypt a PSK v1.1 envelope."""
+        decoded = decode_psk_envelope(envelope_bytes)
+
+        # Look up PSK from channel state if not provided
+        if psk is None:
+            sender_address = self._address_for_key(decoded.sender_public_key)
+            channel = self._psk_channels.get(sender_address)
+            if channel is not None:
+                psk = channel[0]
+
+        if psk is None:
+            raise PSKDecryptionError("No PSK available for this message")
+
+        # Validate counter
+        sender_address = self._address_for_key(decoded.sender_public_key)
+        state = self._get_psk_state(sender_address, psk)
+
+        if not validate_counter(state, decoded.ratchet_counter):
+            raise PSKDecryptionError(
+                f"Invalid counter: {decoded.ratchet_counter} (replay or out of window)"
+            )
+
+        current_psk = derive_psk_at_counter(psk, decoded.ratchet_counter)
+
+        result = decrypt_psk_message(
+            decoded,
+            self._encryption_private_key,
+            self._encryption_public_key,
+            current_psk,
+        )
+
+        # Record successful receive
+        new_state = record_receive(state, decoded.ratchet_counter)
+        self._set_psk_state(sender_address, psk, new_state)
+
+        return result
+
+    # --- PSK channel management ---
+
+    def add_psk_channel(self, address: str, psk: bytes) -> None:
+        """Register a PSK channel for a participant.
+
+        Args:
+            address: The participant's Algorand address.
+            psk: The pre-shared key (32 bytes).
+        """
+        if len(psk) != 32:
+            raise ValueError("PSK must be 32 bytes")
+        self._psk_channels[address] = (psk, PSKState())
+
+    def remove_psk_channel(self, address: str) -> None:
+        """Remove a PSK channel."""
+        self._psk_channels.pop(address, None)
+
+    def has_psk_channel(self, address: str) -> bool:
+        """Check if a PSK channel exists for an address."""
+        return address in self._psk_channels
+
+    def get_psk_state(self, address: str) -> Optional[PSKState]:
+        """Get the PSK state for a channel (for inspection/persistence)."""
+        channel = self._psk_channels.get(address)
+        if channel is not None:
+            return channel[1]
+        return None
+
+    def rotate_psk(self, address: str, new_psk: bytes) -> None:
+        """Rotate the PSK for a channel, preserving counter state.
+
+        Args:
+            address: The participant's Algorand address.
+            new_psk: The new pre-shared key (32 bytes).
+        """
+        if len(new_psk) != 32:
+            raise ValueError("PSK must be 32 bytes")
+        channel = self._psk_channels.get(address)
+        if channel is not None:
+            # Preserve state, reset counters for new key
+            self._psk_channels[address] = (new_psk, PSKState())
+        else:
+            self._psk_channels[address] = (new_psk, PSKState())
+
+    def _get_psk_state(self, address: str, psk: bytes) -> PSKState:
+        """Get or create PSK state for an address."""
+        channel = self._psk_channels.get(address)
+        if channel is not None and channel[0] == psk:
+            return channel[1]
+        return PSKState()
+
+    def _set_psk_state(self, address: str, psk: bytes, state: PSKState) -> None:
+        """Update PSK state for an address."""
+        self._psk_channels[address] = (psk, state)
+
+    def _address_for_key(self, public_key: bytes) -> str:
+        """Look up address for a public key, or use key hex as fallback."""
+        # Check known channels by iterating conversations
+        # Fallback to hex representation for lookup
+        return public_key.hex()
+
     async def process_transaction(self, tx: NoteTransaction) -> Optional[Message]:
         """Processes a transaction and extracts any chat message."""
-        # Check if this is a chat message
-        if not is_chat_message(tx.note):
+        # Check if this is a chat message (standard or PSK)
+        is_standard = is_chat_message(tx.note)
+        is_psk = is_psk_message(tx.note)
+
+        if not is_standard and not is_psk:
             return None
 
         # Determine direction
@@ -250,19 +408,24 @@ class AlgoChat:
         # Get the other party's address and key
         if direction == MessageDirection.SENT:
             other_address = tx.receiver
-            key = await self.discover_key(tx.receiver)
-            if key is None:
-                raise PublicKeyNotFoundError(f"Key not found for {tx.receiver}")
-            other_key = key.public_key
         else:
             other_address = tx.sender
-            key = await self.discover_key(tx.sender)
-            if key is None:
-                raise PublicKeyNotFoundError(f"Key not found for {tx.sender}")
-            other_key = key.public_key
 
-        # Decrypt the message
-        content = self.decrypt(tx.note, other_key)
+        if is_standard:
+            key = await self.discover_key(other_address)
+            if key is None:
+                raise PublicKeyNotFoundError(f"Key not found for {other_address}")
+            other_key = key.public_key
+        else:
+            other_key = b""  # PSK envelopes carry their own sender key
+
+        # Decrypt the message — auto-detects PSK vs standard
+        psk = None
+        if is_psk:
+            channel = self._psk_channels.get(other_address)
+            if channel is not None:
+                psk = channel[0]
+        content = self.decrypt(tx.note, other_key, psk=psk)
 
         # Create message
         timestamp = datetime.fromtimestamp(tx.round_time)

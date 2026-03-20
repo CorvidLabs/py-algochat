@@ -15,9 +15,11 @@ from algochat.blockchain import (
 from algochat.client import AlgoChat, AlgoChatConfig
 from algochat.keys import public_key_to_bytes
 from algochat.models import MessageDirection
+from algochat.psk_state import PSKState
 from algochat.storage import InMemoryKeyStorage
 from algochat.types import (
     InvalidEnvelopeError,
+    PSKDecryptionError,
     PublicKeyNotFoundError,
 )
 
@@ -708,3 +710,153 @@ class TestAlgoChatConfig:
         assert config.auto_discover_keys is False
         assert config.cache_public_keys is False
         assert config.cache_messages is False
+
+
+# ============================================================================
+# PSK Client Integration
+# ============================================================================
+
+TEST_PSK = bytes([0xAA] * 32)
+
+
+class TestPSKChannelManagement:
+    """Test PSK channel lifecycle on the AlgoChat client."""
+
+    @pytest.fixture
+    async def alice(self):
+        return await make_client(ALICE_SEED, ALICE_ADDRESS)
+
+    @pytest.mark.asyncio
+    async def test_add_psk_channel(self, alice):
+        alice.add_psk_channel(BOB_ADDRESS, TEST_PSK)
+        assert alice.has_psk_channel(BOB_ADDRESS)
+
+    @pytest.mark.asyncio
+    async def test_remove_psk_channel(self, alice):
+        alice.add_psk_channel(BOB_ADDRESS, TEST_PSK)
+        alice.remove_psk_channel(BOB_ADDRESS)
+        assert not alice.has_psk_channel(BOB_ADDRESS)
+
+    @pytest.mark.asyncio
+    async def test_remove_nonexistent_channel(self, alice):
+        """Removing a non-existent channel is a no-op."""
+        alice.remove_psk_channel(BOB_ADDRESS)  # should not raise
+
+    @pytest.mark.asyncio
+    async def test_psk_must_be_32_bytes(self, alice):
+        with pytest.raises(ValueError, match="32 bytes"):
+            alice.add_psk_channel(BOB_ADDRESS, b"short")
+
+    @pytest.mark.asyncio
+    async def test_get_psk_state(self, alice):
+        alice.add_psk_channel(BOB_ADDRESS, TEST_PSK)
+        state = alice.get_psk_state(BOB_ADDRESS)
+        assert state is not None
+        assert state.send_counter == 0
+        assert state.peer_last_counter == -1
+
+    @pytest.mark.asyncio
+    async def test_get_psk_state_none(self, alice):
+        assert alice.get_psk_state(BOB_ADDRESS) is None
+
+    @pytest.mark.asyncio
+    async def test_rotate_psk(self, alice):
+        alice.add_psk_channel(BOB_ADDRESS, TEST_PSK)
+        new_psk = bytes([0xBB] * 32)
+        alice.rotate_psk(BOB_ADDRESS, new_psk)
+        assert alice.has_psk_channel(BOB_ADDRESS)
+        state = alice.get_psk_state(BOB_ADDRESS)
+        assert state.send_counter == 0  # reset after rotation
+
+
+class TestPSKEncryptDecryptClient:
+    """Test PSK encrypt/decrypt through the AlgoChat client."""
+
+    @pytest.fixture
+    async def alice(self):
+        return await make_client(ALICE_SEED, ALICE_ADDRESS)
+
+    @pytest.fixture
+    async def bob(self):
+        return await make_client(BOB_SEED, BOB_ADDRESS)
+
+    @pytest.mark.asyncio
+    async def test_psk_encrypt_decrypt_round_trip(self, alice, bob):
+        """Bob can decrypt a PSK-encrypted message from Alice via client API."""
+        alice_pub = public_key_to_bytes(alice._encryption_public_key)
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+
+        encrypted = alice.encrypt("Hello PSK!", bob_pub, psk=TEST_PSK)
+        result = bob.decrypt(encrypted, alice_pub, psk=TEST_PSK)
+        assert result == "Hello PSK!"
+
+    @pytest.mark.asyncio
+    async def test_psk_sender_can_decrypt_own_message(self, alice, bob):
+        """Alice can decrypt her own PSK message (bidirectional)."""
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+
+        encrypted = alice.encrypt("Self-read", bob_pub, psk=TEST_PSK)
+        result = alice.decrypt(encrypted, psk=TEST_PSK)
+        assert result == "Self-read"
+
+    @pytest.mark.asyncio
+    async def test_psk_counter_advances(self, alice, bob):
+        """Send counter advances with each PSK encrypt call."""
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+        alice.add_psk_channel(BOB_ADDRESS, TEST_PSK)
+
+        alice.encrypt("msg1", bob_pub, psk=TEST_PSK)
+        alice.encrypt("msg2", bob_pub, psk=TEST_PSK)
+
+        # _address_for_key returns hex of the public key
+        state = alice._psk_channels.get(bob_pub.hex())
+        assert state is not None
+        assert state[1].send_counter == 2
+
+    @pytest.mark.asyncio
+    async def test_psk_replay_rejected(self, alice, bob):
+        """Replaying the same PSK ciphertext is rejected."""
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+        alice_pub = public_key_to_bytes(alice._encryption_public_key)
+
+        encrypted = alice.encrypt("no replay", bob_pub, psk=TEST_PSK)
+
+        # First decrypt succeeds
+        bob.decrypt(encrypted, alice_pub, psk=TEST_PSK)
+
+        # Second decrypt (replay) should fail
+        with pytest.raises(PSKDecryptionError, match="replay"):
+            bob.decrypt(encrypted, alice_pub, psk=TEST_PSK)
+
+    @pytest.mark.asyncio
+    async def test_psk_without_key_raises(self, alice, bob):
+        """Decrypting a PSK message without a PSK raises an error."""
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+
+        encrypted = alice.encrypt("secret", bob_pub, psk=TEST_PSK)
+
+        with pytest.raises(PSKDecryptionError, match="No PSK"):
+            bob.decrypt(encrypted)
+
+    @pytest.mark.asyncio
+    async def test_psk_multiple_messages(self, alice, bob):
+        """Multiple PSK messages with advancing counters all decrypt."""
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+
+        messages = ["msg1", "msg2", "msg3"]
+        encrypted_messages = []
+        for msg in messages:
+            encrypted_messages.append(alice.encrypt(msg, bob_pub, psk=TEST_PSK))
+
+        for i, enc in enumerate(encrypted_messages):
+            result = bob.decrypt(enc, psk=TEST_PSK)
+            assert result == messages[i]
+
+    @pytest.mark.asyncio
+    async def test_standard_encrypt_still_works(self, alice, bob):
+        """Standard (non-PSK) encrypt/decrypt is unaffected."""
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+
+        encrypted = alice.encrypt("standard msg", bob_pub)
+        result = bob.decrypt(encrypted)
+        assert result == "standard msg"
