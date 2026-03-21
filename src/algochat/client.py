@@ -37,6 +37,8 @@ from .storage import (
     InMemoryMessageCache,
     PublicKeyCache,
 )
+from .psk_channel import PSKChannel
+from .psk_envelope import is_psk_message
 from .types import (
     InvalidEnvelopeError,
     PublicKeyNotFoundError,
@@ -107,6 +109,7 @@ class AlgoChat:
         self._public_key_cache = PublicKeyCache()
         self._send_queue = SendQueue()
         self._conversations: list[Conversation] = []
+        self._psk_channels: dict[str, PSKChannel] = {}
         self._lock = asyncio.Lock()
 
     @classmethod
@@ -234,8 +237,15 @@ class AlgoChat:
         return result.text
 
     async def process_transaction(self, tx: NoteTransaction) -> Optional[Message]:
-        """Processes a transaction and extracts any chat message."""
-        # Check if this is a chat message
+        """Processes a transaction and extracts any chat message.
+
+        Handles both standard AlgoChat and PSK v1.1 messages.
+        """
+        # Check for PSK message first
+        if is_psk_message(tx.note):
+            return await self._process_psk_transaction(tx)
+
+        # Check if this is a standard chat message
         if not is_chat_message(tx.note):
             return None
 
@@ -298,6 +308,61 @@ class AlgoChat:
 
         return message
 
+    async def _process_psk_transaction(self, tx: NoteTransaction) -> Optional[Message]:
+        """Processes a PSK-encrypted transaction."""
+        # Determine direction and contact address
+        if tx.sender == self._address:
+            direction = MessageDirection.SENT
+            contact_address = tx.receiver
+        elif tx.receiver == self._address:
+            direction = MessageDirection.RECEIVED
+            contact_address = tx.sender
+        else:
+            return None
+
+        # Get PSK channel for this contact
+        channel = self._psk_channels.get(contact_address)
+        if channel is None:
+            return None  # No PSK channel — skip silently
+
+        # Decrypt
+        try:
+            psk_msg = channel.decrypt(tx.note, txid=tx.txid)
+        except Exception:
+            return None  # Decryption failed — skip
+
+        timestamp = datetime.fromtimestamp(tx.round_time)
+
+        message = Message(
+            id=tx.txid,
+            sender=tx.sender,
+            recipient=tx.receiver,
+            content=psk_msg.text,
+            timestamp=timestamp,
+            confirmed_round=tx.confirmed_round,
+            direction=direction,
+            reply_context=None,
+        )
+
+        # Update conversation
+        async with self._lock:
+            conv = None
+            for c in self._conversations:
+                if c.participant == contact_address:
+                    conv = c
+                    break
+
+            if conv is None:
+                conv = Conversation(contact_address)
+                self._conversations.append(conv)
+
+            conv.append(message)
+
+        if self._config.cache_messages:
+            await self._message_cache.store([message], message.sender)
+
+        return message
+
     async def sync(self) -> list[Message]:
         """Fetches new messages from the blockchain."""
         all_messages = []
@@ -326,3 +391,85 @@ class AlgoChat:
     def public_key_cache(self) -> PublicKeyCache:
         """Returns the public key cache."""
         return self._public_key_cache
+
+    def create_psk_channel(
+        self,
+        contact_address: str,
+        psk: Optional[bytes] = None,
+    ) -> PSKChannel:
+        """Creates a PSK channel for a contact.
+
+        Args:
+            contact_address: The contact's Algorand address.
+            psk: Optional pre-shared key (generated if not provided).
+
+        Returns:
+            The PSKChannel for this contact.
+        """
+        if psk is None:
+            psk = PSKChannel.generate_psk()
+
+        channel = PSKChannel(
+            initial_psk=psk,
+            our_private_key=self._encryption_private_key,
+            our_public_key=self._encryption_public_key,
+        )
+        self._psk_channels[contact_address] = channel
+        return channel
+
+    def get_psk_channel(self, contact_address: str) -> Optional[PSKChannel]:
+        """Gets an existing PSK channel for a contact.
+
+        Args:
+            contact_address: The contact's Algorand address.
+
+        Returns:
+            The PSKChannel, or None if no channel exists.
+        """
+        return self._psk_channels.get(contact_address)
+
+    def is_psk_contact(self, address: str) -> bool:
+        """Checks if an address has an active PSK channel."""
+        return address in self._psk_channels
+
+    def remove_psk_channel(self, contact_address: str) -> None:
+        """Removes a PSK channel for a contact."""
+        self._psk_channels.pop(contact_address, None)
+
+    def encrypt_psk(self, message: str, contact_address: str) -> bytes:
+        """Encrypts a message using the PSK channel for a contact.
+
+        Args:
+            message: The message text.
+            contact_address: The contact's Algorand address.
+
+        Returns:
+            Encoded PSK envelope bytes.
+
+        Raises:
+            KeyError: If no PSK channel exists for this contact.
+        """
+        channel = self._psk_channels.get(contact_address)
+        if channel is None:
+            raise KeyError(f"No PSK channel for {contact_address}")
+        return channel.encrypt(message)
+
+    def decrypt_psk(self, data: bytes, contact_address: str, txid: Optional[str] = None) -> str:
+        """Decrypts a PSK message from a contact.
+
+        Args:
+            data: Encoded PSK envelope bytes.
+            contact_address: The contact's Algorand address.
+            txid: Optional transaction ID for deduplication.
+
+        Returns:
+            Decrypted message text.
+
+        Raises:
+            KeyError: If no PSK channel exists for this contact.
+        """
+        channel = self._psk_channels.get(contact_address)
+        if channel is None:
+            raise KeyError(f"No PSK channel for {contact_address}")
+        msg = channel.decrypt(data, txid=txid)
+        return msg.text

@@ -109,6 +109,11 @@ from .psk_crypto import (
     encrypt_psk_message,
     decrypt_psk_message,
 )
+from .psk_channel import (
+    PSKChannel,
+    PSKMessage,
+    PSKRotationInfo,
+)
 
 __version__ = "0.1.0"
 
@@ -215,4 +220,8 @@ __all__ = [
     "decrypt_psk_message",
     "PSKEncryptionError",
     "PSKDecryptionError",
+    # PSK Channel
+    "PSKChannel",
+    "PSKMessage",
+    "PSKRotationInfo",
 ]
