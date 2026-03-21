@@ -1,14 +1,11 @@
 """Tests for PSKChannel — high-level PSK conversation manager."""
 
 import os
-import time
-from unittest.mock import MagicMock
 
 import pytest
 
 from algochat.keys import derive_keys_from_seed, public_key_to_bytes
-from algochat.psk_channel import PSKChannel, PSKMessage
-from algochat.psk_envelope import is_psk_message
+from algochat.psk_channel import PSKChannel
 from algochat.psk_state import PSKState
 from algochat.psk_exchange import parse_psk_exchange_uri
 from .test_vectors import ALICE_SEED_HEX, BOB_SEED_HEX
@@ -316,7 +313,8 @@ class TestPSKChannelCallbacks:
     def test_off_message_callback(self, alice_channel, bob_channel):
         """Unregistered callbacks are not called."""
         received = []
-        cb = lambda msg: received.append(msg)
+        def cb(msg):
+            received.append(msg)
 
         bob_channel.on_message(cb)
         bob_channel.off_message(cb)

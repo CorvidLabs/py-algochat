@@ -12,14 +12,13 @@ from typing import Optional, Callable, List
 
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
 
-from .keys import public_key_to_bytes, public_key_from_bytes
-from .psk_types import PSKEnvelope, PSK_SESSION_SIZE
+from .keys import public_key_from_bytes
 from .psk_ratchet import derive_psk_at_counter
 from .psk_crypto import encrypt_psk_message, decrypt_psk_message
 from .psk_envelope import encode_psk_envelope, decode_psk_envelope, is_psk_message
 from .psk_state import PSKState, validate_counter, record_receive, advance_send_counter
 from .psk_exchange import create_psk_exchange_uri, parse_psk_exchange_uri
-from .types import PSKEncryptionError, PSKDecryptionError
+from .types import PSKDecryptionError
 
 
 @dataclass
