@@ -10,6 +10,8 @@ from enum import Enum
 from typing import Iterator, List, Optional
 import uuid
 
+from .psk_state import PSKState
+
 
 @dataclass
 class ReplyContext:
@@ -91,6 +93,15 @@ class Conversation:
     participant_encryption_key: Optional[bytes] = None
     """Cached encryption public key for the participant (32 bytes)."""
 
+    psk: Optional[bytes] = None
+    """Pre-shared key for PSK v1.1 encrypted conversations (32 bytes)."""
+
+    psk_state: Optional[PSKState] = None
+    """PSK counter state for replay protection."""
+
+    psk_label: Optional[str] = None
+    """Human-readable label for the PSK channel."""
+
     _messages: List[Message] = field(default_factory=list)
     """Messages in chronological order."""
 
@@ -147,6 +158,11 @@ class Conversation:
     def is_empty(self) -> bool:
         """Whether the conversation has any messages."""
         return len(self._messages) == 0
+
+    @property
+    def is_psk_enabled(self) -> bool:
+        """Whether this conversation has PSK encryption enabled."""
+        return self.psk is not None
 
     def append(self, message: Message) -> None:
         """Adds a message to the conversation (maintains chronological order)."""
