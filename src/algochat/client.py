@@ -22,14 +22,14 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 
 from .crypto import encrypt_message, decrypt_message
 from .envelope import encode_envelope, decode_envelope, is_chat_message
-from .keys import derive_keys_from_seed, public_key_from_bytes, public_key_to_bytes
+from .keys import derive_keys_from_seed, public_key_from_bytes
 from .models import (
     Conversation,
     DiscoveredKey,
     Message,
     MessageDirection,
 )
-from .psk_crypto import encrypt_psk_message, decrypt_psk_message, encode_message_payload
+from .psk_crypto import encrypt_psk_message, decrypt_psk_message
 from .psk_envelope import encode_psk_envelope, decode_psk_envelope, is_psk_message
 from .psk_ratchet import derive_psk_at_counter
 from .psk_state import PSKState, validate_counter, record_receive, advance_send_counter

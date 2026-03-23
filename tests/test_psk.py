@@ -35,7 +35,6 @@ from algochat.psk_exchange import (
     create_psk_exchange_uri,
     parse_psk_exchange_uri,
 )
-from algochat.types import DecryptedContent
 from .test_vectors import ALICE_SEED_HEX, BOB_SEED_HEX
 
 

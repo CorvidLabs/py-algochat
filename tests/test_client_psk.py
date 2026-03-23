@@ -1,10 +1,9 @@
 """Tests for PSK v1.1 client integration."""
 
-import asyncio
 import pytest
 
 from algochat.keys import derive_keys_from_seed, public_key_to_bytes
-from algochat.psk_envelope import is_psk_message, decode_psk_envelope
+from algochat.psk_envelope import is_psk_message
 from algochat.psk_state import PSKState
 from algochat.types import InvalidEnvelopeError, PSKDecryptionError
 
