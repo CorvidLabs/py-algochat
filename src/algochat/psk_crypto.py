@@ -1,6 +1,8 @@
 """PSK encryption and decryption for the v1.1 protocol."""
 
+import json
 import os
+from typing import Optional
 
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
@@ -16,7 +18,35 @@ from .keys import (
     public_key_to_bytes,
     public_key_from_bytes,
 )
-from .types import NONCE_SIZE, PSKEncryptionError, PSKDecryptionError
+from .types import DecryptedContent, NONCE_SIZE, PSKEncryptionError, PSKDecryptionError
+
+
+def encode_message_payload(
+    text: str,
+    reply_to_id: Optional[str] = None,
+    reply_to_preview: Optional[str] = None,
+) -> str:
+    """Encode a message with optional reply context as a JSON payload.
+
+    If reply context is provided, encodes as JSON ``{"text": ..., "replyTo": ...}``.
+    Otherwise returns the plain text (legacy format).
+
+    Args:
+        text: Message text.
+        reply_to_id: Transaction ID of the message being replied to.
+        reply_to_preview: Preview text of the message being replied to.
+
+    Returns:
+        Encoded payload string.
+    """
+    if reply_to_id is not None:
+        payload: dict = {"text": text}
+        reply_to: dict = {"txid": reply_to_id}
+        if reply_to_preview is not None:
+            reply_to["preview"] = reply_to_preview
+        payload["replyTo"] = reply_to
+        return json.dumps(payload, separators=(",", ":"))
+    return text
 
 
 def encrypt_psk_message(
@@ -26,6 +56,8 @@ def encrypt_psk_message(
     recipient_public_key: X25519PublicKey,
     current_psk: bytes,
     ratchet_counter: int,
+    reply_to_id: Optional[str] = None,
+    reply_to_preview: Optional[str] = None,
 ) -> PSKEnvelope:
     """Encrypt a message using the PSK v1.1 protocol.
 
@@ -36,6 +68,8 @@ def encrypt_psk_message(
         recipient_public_key: Recipient's X25519 public key.
         current_psk: The current ratcheted PSK (32 bytes).
         ratchet_counter: The ratchet counter for this message.
+        reply_to_id: Optional transaction ID of the message being replied to.
+        reply_to_preview: Optional preview text of the replied message.
 
     Returns:
         PSKEnvelope containing the encrypted message.
@@ -43,7 +77,8 @@ def encrypt_psk_message(
     Raises:
         PSKEncryptionError: If encryption fails.
     """
-    message_bytes = plaintext.encode("utf-8")
+    payload = encode_message_payload(plaintext, reply_to_id, reply_to_preview)
+    message_bytes = payload.encode("utf-8")
 
     if len(message_bytes) > PSK_MAX_PAYLOAD_SIZE:
         raise PSKEncryptionError(
@@ -105,10 +140,11 @@ def decrypt_psk_message(
     recipient_private_key: X25519PrivateKey,
     recipient_public_key: X25519PublicKey,
     current_psk: bytes,
-) -> str:
+) -> Optional[DecryptedContent]:
     """Decrypt a PSK v1.1 protocol message.
 
     Attempts decryption as recipient first, then as sender (bidirectional).
+    Returns ``None`` for key-publish payloads (infrastructure messages).
 
     Args:
         envelope: The PSK envelope to decrypt.
@@ -117,7 +153,7 @@ def decrypt_psk_message(
         current_psk: The current ratcheted PSK (32 bytes).
 
     Returns:
-        Decrypted message text.
+        Decrypted message content, or None for key-publish payloads.
 
     Raises:
         PSKDecryptionError: If decryption fails.
@@ -135,7 +171,12 @@ def decrypt_psk_message(
                 envelope, recipient_private_key, my_pub_bytes, current_psk
             )
 
-        return plaintext_bytes.decode("utf-8")
+        if _is_key_publish_payload(plaintext_bytes):
+            return None
+
+        return _parse_message_payload(plaintext_bytes)
+    except PSKDecryptionError:
+        raise
     except Exception as e:
         raise PSKDecryptionError(f"PSK decryption failed: {e}") from e
 
@@ -188,3 +229,43 @@ def _decrypt_psk_as_sender(
     # Now decrypt the message
     cipher = ChaCha20Poly1305(symmetric_key)
     return cipher.decrypt(envelope.nonce, envelope.ciphertext, None)
+
+
+def _is_key_publish_payload(data: bytes) -> bool:
+    """Check if the decrypted payload is a key-publish infrastructure message."""
+    if not data or data[0] != 0x7B:  # '{'
+        return False
+    try:
+        parsed = json.loads(data.decode("utf-8"))
+        return parsed.get("type") == "key-publish"
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return False
+
+
+def _parse_message_payload(data: bytes) -> DecryptedContent:
+    """Parse a decrypted payload into structured content.
+
+    Supports both JSON format ``{"text": ..., "replyTo": ...}`` and
+    legacy plain text.
+    """
+    text = data.decode("utf-8")
+
+    if text.startswith("{"):
+        try:
+            parsed = json.loads(text)
+            if isinstance(parsed.get("text"), str):
+                reply_to = parsed.get("replyTo")
+                reply_to_id = None
+                reply_to_preview = None
+                if isinstance(reply_to, dict):
+                    reply_to_id = reply_to.get("txid")
+                    reply_to_preview = reply_to.get("preview")
+                return DecryptedContent(
+                    text=parsed["text"],
+                    reply_to_id=reply_to_id,
+                    reply_to_preview=reply_to_preview,
+                )
+        except json.JSONDecodeError:
+            pass
+
+    return DecryptedContent(text=text)

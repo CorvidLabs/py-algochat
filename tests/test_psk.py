@@ -1,5 +1,6 @@
 """Tests for PSK (Pre-Shared Key) v1.1 protocol."""
 
+import json
 import pytest
 from algochat.keys import derive_keys_from_seed
 from algochat.psk_types import (
@@ -22,6 +23,7 @@ from algochat.psk_envelope import (
 from algochat.psk_crypto import (
     encrypt_psk_message,
     decrypt_psk_message,
+    encode_message_payload,
 )
 from algochat.psk_state import (
     PSKState,
@@ -33,6 +35,7 @@ from algochat.psk_exchange import (
     create_psk_exchange_uri,
     parse_psk_exchange_uri,
 )
+from algochat.types import DecryptedContent
 from .test_vectors import ALICE_SEED_HEX, BOB_SEED_HEX
 
 
@@ -188,7 +191,9 @@ class TestPSKEncryptDecrypt:
         )
 
         result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
-        assert result == "Hello PSK!"
+        assert result is not None
+        assert result.text == "Hello PSK!"
+        assert result.reply_to_id is None
 
     def test_encrypt_decrypt_as_sender(self, alice_keys, bob_keys) -> None:
         """Alice can decrypt her own PSK message (bidirectional)."""
@@ -206,7 +211,8 @@ class TestPSKEncryptDecrypt:
         )
 
         result = decrypt_psk_message(envelope, alice_private, alice_public, psk)
-        assert result == "Self-decrypt test"
+        assert result is not None
+        assert result.text == "Self-decrypt test"
 
     def test_full_round_trip_with_encoding(self, alice_keys, bob_keys) -> None:
         """Full round trip: encrypt -> encode -> decode -> decrypt."""
@@ -228,7 +234,8 @@ class TestPSKEncryptDecrypt:
 
         decoded = decode_psk_envelope(encoded)
         result = decrypt_psk_message(decoded, bob_private, bob_public, psk)
-        assert result == "Round trip PSK"
+        assert result is not None
+        assert result.text == "Round trip PSK"
 
     def test_different_counters_different_keys(self, alice_keys, bob_keys) -> None:
         """Messages at different counters use different derived keys."""
@@ -249,7 +256,8 @@ class TestPSKEncryptDecrypt:
 
         # Should succeed with correct PSK
         result = decrypt_psk_message(envelope, bob_private, bob_public, psk0)
-        assert result == "Counter 0 message"
+        assert result is not None
+        assert result.text == "Counter 0 message"
 
         # Should fail with wrong PSK
         with pytest.raises(Exception):
@@ -272,7 +280,8 @@ class TestPSKEncryptDecrypt:
         )
 
         result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
-        assert result == message
+        assert result is not None
+        assert result.text == message
 
     def test_empty_message(self, alice_keys, bob_keys) -> None:
         """PSK encryption handles empty messages."""
@@ -290,7 +299,8 @@ class TestPSKEncryptDecrypt:
         )
 
         result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
-        assert result == ""
+        assert result is not None
+        assert result.text == ""
 
 
 class TestPSKState:
@@ -446,3 +456,130 @@ class TestPSKExchangeURI:
         """Parsing URI without psk raises ValueError."""
         with pytest.raises(ValueError, match="psk"):
             parse_psk_exchange_uri("algochat-psk://v1?addr=X")
+
+
+class TestEncodeMessagePayload:
+    """Test message payload encoding."""
+
+    def test_plain_text(self) -> None:
+        """Plain text without reply context returns text as-is."""
+        assert encode_message_payload("hello") == "hello"
+
+    def test_with_reply_context(self) -> None:
+        """Reply context encodes as JSON."""
+        result = encode_message_payload("reply text", reply_to_id="TX123", reply_to_preview="orig")
+        parsed = json.loads(result)
+        assert parsed["text"] == "reply text"
+        assert parsed["replyTo"]["txid"] == "TX123"
+        assert parsed["replyTo"]["preview"] == "orig"
+
+    def test_reply_without_preview(self) -> None:
+        """Reply context without preview omits preview field."""
+        result = encode_message_payload("reply", reply_to_id="TX456")
+        parsed = json.loads(result)
+        assert parsed["text"] == "reply"
+        assert "preview" not in parsed["replyTo"]
+        assert parsed["replyTo"]["txid"] == "TX456"
+
+
+class TestPSKPayloadParsing:
+    """Test PSK message payload parsing (JSON format, key-publish, reply context)."""
+
+    @pytest.fixture
+    def alice_keys(self):
+        seed = bytes.fromhex(ALICE_SEED_HEX)
+        return derive_keys_from_seed(seed)
+
+    @pytest.fixture
+    def bob_keys(self):
+        seed = bytes.fromhex(BOB_SEED_HEX)
+        return derive_keys_from_seed(seed)
+
+    def test_key_publish_returns_none(self, alice_keys, bob_keys) -> None:
+        """Key-publish payloads are detected and return None."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+
+        # Encrypt a key-publish payload directly
+        key_publish = json.dumps({"type": "key-publish", "key": "abc123"})
+        envelope = encrypt_psk_message(
+            key_publish,
+            alice_private, alice_public, bob_public, psk, 0,
+        )
+
+        result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
+        assert result is None
+
+    def test_json_payload_with_reply(self, alice_keys, bob_keys) -> None:
+        """JSON payload with reply context is parsed correctly."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+
+        envelope = encrypt_psk_message(
+            "My reply",
+            alice_private, alice_public, bob_public, psk, 0,
+            reply_to_id="TXID_ORIG",
+            reply_to_preview="Original message...",
+        )
+
+        result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
+        assert result is not None
+        assert result.text == "My reply"
+        assert result.reply_to_id == "TXID_ORIG"
+        assert result.reply_to_preview == "Original message..."
+
+    def test_plain_text_fallback(self, alice_keys, bob_keys) -> None:
+        """Plain text messages are returned as DecryptedContent."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+
+        envelope = encrypt_psk_message(
+            "Just plain text",
+            alice_private, alice_public, bob_public, psk, 0,
+        )
+
+        result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
+        assert result is not None
+        assert result.text == "Just plain text"
+        assert result.reply_to_id is None
+        assert result.reply_to_preview is None
+
+    def test_non_key_publish_json_is_not_filtered(self, alice_keys, bob_keys) -> None:
+        """JSON payloads that are not key-publish are preserved."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+
+        # A JSON string that starts with { but has no "text" field and no "type": "key-publish"
+        payload = json.dumps({"action": "ping", "ts": 12345})
+        envelope = encrypt_psk_message(
+            payload,
+            alice_private, alice_public, bob_public, psk, 0,
+        )
+
+        result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
+        assert result is not None
+        # Falls through to plain text since no "text" field in JSON
+        assert result.text == payload
+
+    def test_bidirectional_reply_context(self, alice_keys, bob_keys) -> None:
+        """Sender can also decrypt messages with reply context."""
+        alice_private, alice_public = alice_keys
+        _, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+
+        envelope = encrypt_psk_message(
+            "Self-read reply",
+            alice_private, alice_public, bob_public, psk, 0,
+            reply_to_id="TX_SELF",
+            reply_to_preview="prev",
+        )
+
+        # Sender decrypts own message
+        result = decrypt_psk_message(envelope, alice_private, alice_public, psk)
+        assert result is not None
+        assert result.text == "Self-read reply"
+        assert result.reply_to_id == "TX_SELF"

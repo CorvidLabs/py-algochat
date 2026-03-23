@@ -168,14 +168,16 @@ class TestEncryptDecryptPSK:
         assert is_psk_message(encrypted)
 
         decrypted = bob.decrypt_psk(encrypted, TEST_PSK)
-        assert decrypted == "Hello Bob!"
+        assert decrypted is not None
+        assert decrypted.text == "Hello Bob!"
 
     def test_round_trip_as_sender(self):
         alice = make_alice()
 
         encrypted = alice.encrypt_psk("Hello!", BOB_PUB_BYTES, TEST_PSK, counter=0)
         decrypted = alice.decrypt_psk(encrypted, TEST_PSK)
-        assert decrypted == "Hello!"
+        assert decrypted is not None
+        assert decrypted.text == "Hello!"
 
     def test_different_counters(self):
         alice = make_alice()
@@ -187,15 +189,18 @@ class TestEncryptDecryptPSK:
         # Different counters produce different ciphertext
         assert enc0 != enc1
 
-        assert bob.decrypt_psk(enc0, TEST_PSK) == "msg0"
-        assert bob.decrypt_psk(enc1, TEST_PSK) == "msg1"
+        result0 = bob.decrypt_psk(enc0, TEST_PSK)
+        result1 = bob.decrypt_psk(enc1, TEST_PSK)
+        assert result0 is not None and result0.text == "msg0"
+        assert result1 is not None and result1.text == "msg1"
 
     def test_unicode_message(self):
         alice = make_alice()
         bob = make_bob()
 
         encrypted = alice.encrypt_psk("こんにちは 👋", BOB_PUB_BYTES, TEST_PSK, counter=0)
-        assert bob.decrypt_psk(encrypted, TEST_PSK) == "こんにちは 👋"
+        result = bob.decrypt_psk(encrypted, TEST_PSK)
+        assert result is not None and result.text == "こんにちは 👋"
 
     def test_decrypt_non_psk_raises(self):
         alice = make_alice()
@@ -258,8 +263,9 @@ class TestSendReceivePSK:
         encrypted = alice.encrypt_psk("Hello!", BOB_PUB_BYTES, TEST_PSK, counter=0)
 
         # Bob receives via high-level API
-        text = await bob.receive_psk(encrypted, "ALICE_ADDRESS")
-        assert text == "Hello!"
+        result = await bob.receive_psk(encrypted, "ALICE_ADDRESS")
+        assert result is not None
+        assert result.text == "Hello!"
 
         # Counter state should be updated
         conv = await bob.conversation("ALICE_ADDRESS")
@@ -311,19 +317,19 @@ class TestSendReceivePSK:
 
         # Alice sends to Bob
         enc1, _ = await alice.send_psk("BOB_ADDRESS", "Hey Bob!")
-        text1 = await bob.receive_psk(enc1, "ALICE_ADDRESS")
-        assert text1 == "Hey Bob!"
+        result1 = await bob.receive_psk(enc1, "ALICE_ADDRESS")
+        assert result1 is not None and result1.text == "Hey Bob!"
 
         # Bob sends to Alice
         enc2, _ = await bob.send_psk("ALICE_ADDRESS", "Hi Alice!")
-        text2 = await alice.receive_psk(enc2, "BOB_ADDRESS")
-        assert text2 == "Hi Alice!"
+        result2 = await alice.receive_psk(enc2, "BOB_ADDRESS")
+        assert result2 is not None and result2.text == "Hi Alice!"
 
         # Alice sends again (counter advances)
         enc3, counter3 = await alice.send_psk("BOB_ADDRESS", "How are you?")
         assert counter3 == 1  # Second message from Alice
-        text3 = await bob.receive_psk(enc3, "ALICE_ADDRESS")
-        assert text3 == "How are you?"
+        result3 = await bob.receive_psk(enc3, "ALICE_ADDRESS")
+        assert result3 is not None and result3.text == "How are you?"
 
 
 class TestConversationPSKProperties:

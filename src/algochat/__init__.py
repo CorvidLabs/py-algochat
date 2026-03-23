@@ -108,6 +108,7 @@ from .psk_exchange import (
 from .psk_crypto import (
     encrypt_psk_message,
     decrypt_psk_message,
+    encode_message_payload,
 )
 
 __version__ = "0.1.0"
@@ -213,6 +214,7 @@ __all__ = [
     # PSK Crypto
     "encrypt_psk_message",
     "decrypt_psk_message",
+    "encode_message_payload",
     "PSKEncryptionError",
     "PSKDecryptionError",
 ]

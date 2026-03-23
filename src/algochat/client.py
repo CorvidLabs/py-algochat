@@ -29,7 +29,7 @@ from .models import (
     Message,
     MessageDirection,
 )
-from .psk_crypto import encrypt_psk_message, decrypt_psk_message
+from .psk_crypto import encrypt_psk_message, decrypt_psk_message, encode_message_payload
 from .psk_envelope import encode_psk_envelope, decode_psk_envelope, is_psk_message
 from .psk_ratchet import derive_psk_at_counter
 from .psk_state import PSKState, validate_counter, record_receive, advance_send_counter
@@ -42,6 +42,7 @@ from .storage import (
     PublicKeyCache,
 )
 from .types import (
+    DecryptedContent,
     InvalidEnvelopeError,
     PSKDecryptionError,
     PublicKeyNotFoundError,
@@ -270,6 +271,8 @@ class AlgoChat:
         recipient_public_key: bytes,
         psk: bytes,
         counter: int,
+        reply_to_id: Optional[str] = None,
+        reply_to_preview: Optional[str] = None,
     ) -> bytes:
         """Encrypt a message using the PSK v1.1 protocol.
 
@@ -278,6 +281,8 @@ class AlgoChat:
             recipient_public_key: Recipient's X25519 public key (32 bytes).
             psk: The initial pre-shared key (32 bytes).
             counter: The ratchet counter for this message.
+            reply_to_id: Optional transaction ID of the message being replied to.
+            reply_to_preview: Optional preview text of the replied message.
 
         Returns:
             Encoded PSK envelope bytes.
@@ -292,11 +297,13 @@ class AlgoChat:
             recipient_public_key=recipient_key,
             current_psk=current_psk,
             ratchet_counter=counter,
+            reply_to_id=reply_to_id,
+            reply_to_preview=reply_to_preview,
         )
 
         return encode_psk_envelope(envelope)
 
-    def decrypt_psk(self, data: bytes, psk: bytes) -> str:
+    def decrypt_psk(self, data: bytes, psk: bytes) -> Optional[DecryptedContent]:
         """Decrypt a PSK v1.1 protocol message.
 
         Args:
@@ -304,7 +311,7 @@ class AlgoChat:
             psk: The initial pre-shared key (32 bytes).
 
         Returns:
-            Decrypted message text.
+            Decrypted message content, or None for key-publish payloads.
 
         Raises:
             InvalidEnvelopeError: If data is not a valid PSK envelope.
@@ -327,6 +334,8 @@ class AlgoChat:
         self,
         address: str,
         message: str,
+        reply_to_id: Optional[str] = None,
+        reply_to_preview: Optional[str] = None,
     ) -> tuple:
         """Encrypt a PSK message for a contact and advance the counter.
 
@@ -335,6 +344,8 @@ class AlgoChat:
         Args:
             address: The recipient's Algorand address.
             message: Plaintext message.
+            reply_to_id: Optional transaction ID of the message being replied to.
+            reply_to_preview: Optional preview text of the replied message.
 
         Returns:
             Tuple of (encrypted_bytes, counter_used).
@@ -356,24 +367,28 @@ class AlgoChat:
         if key is None:
             raise PublicKeyNotFoundError(f"Key not found for {address}")
 
-        encrypted = self.encrypt_psk(message, key.public_key, conv.psk, counter)
+        encrypted = self.encrypt_psk(
+            message, key.public_key, conv.psk, counter,
+            reply_to_id=reply_to_id, reply_to_preview=reply_to_preview,
+        )
         return encrypted, counter
 
     async def receive_psk(
         self,
         data: bytes,
         sender_address: str,
-    ) -> str:
+    ) -> Optional[DecryptedContent]:
         """Decrypt a PSK message from a contact and update counter state.
 
         This is the high-level receive method that manages PSK state automatically.
+        Returns ``None`` for key-publish payloads (infrastructure messages).
 
         Args:
             data: Encoded PSK envelope bytes.
             sender_address: The sender's Algorand address.
 
         Returns:
-            Decrypted message text.
+            Decrypted message content, or None for key-publish payloads.
 
         Raises:
             ValueError: If no PSK is configured for this sender.
@@ -394,7 +409,7 @@ class AlgoChat:
 
         # Decrypt
         current_psk = derive_psk_at_counter(conv.psk, envelope.ratchet_counter)
-        text = decrypt_psk_message(
+        result = decrypt_psk_message(
             envelope=envelope,
             recipient_private_key=self._encryption_private_key,
             recipient_public_key=self._encryption_public_key,
@@ -405,7 +420,7 @@ class AlgoChat:
         async with self._lock:
             conv.psk_state = record_receive(conv.psk_state, envelope.ratchet_counter)
 
-        return text
+        return result
 
     async def process_transaction(self, tx: NoteTransaction) -> Optional[Message]:
         """Processes a transaction and extracts any chat message."""
@@ -439,10 +454,20 @@ class AlgoChat:
             other_key = key.public_key
 
         # Decrypt the message (PSK or standard)
+        reply_context = None
         if is_psk:
             conv = await self.conversation(other_address)
             if conv.is_psk_enabled:
-                content = self.decrypt_psk(tx.note, conv.psk)
+                decrypted = self.decrypt_psk(tx.note, conv.psk)
+                if decrypted is None:
+                    return None  # Key-publish payload — skip
+                content = decrypted.text
+                if decrypted.reply_to_id is not None:
+                    from .models import ReplyContext
+                    reply_context = ReplyContext(
+                        message_id=decrypted.reply_to_id,
+                        preview=decrypted.reply_to_preview or "",
+                    )
                 # Update counter state for received PSK messages
                 if direction == MessageDirection.RECEIVED:
                     psk_envelope = decode_psk_envelope(tx.note)
@@ -467,7 +492,7 @@ class AlgoChat:
             timestamp=timestamp,
             confirmed_round=tx.confirmed_round,
             direction=direction,
-            reply_context=None,  # Reply context would be parsed from content
+            reply_context=reply_context,
         )
 
         # Update conversation
