@@ -18,7 +18,6 @@ from algochat.models import MessageDirection
 from algochat.storage import InMemoryKeyStorage
 from algochat.types import (
     InvalidEnvelopeError,
-    PSKDecryptionError,
     PublicKeyNotFoundError,
 )
 
