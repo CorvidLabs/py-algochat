@@ -332,16 +332,19 @@ class AlgoChat:
 
     # --- PSK channel management ---
 
-    def add_psk_channel(self, address: str, psk: bytes) -> None:
+    def add_psk_channel(self, address: str, psk: bytes, public_key: Optional[bytes] = None) -> None:
         """Register a PSK channel for a participant.
 
         Args:
             address: The participant's Algorand address.
             psk: The pre-shared key (32 bytes).
+            public_key: Optional X25519 public key (32 bytes) to enable lookup by key.
         """
         if len(psk) != 32:
             raise ValueError("PSK must be 32 bytes")
         self._psk_channels[address] = (psk, PSKState())
+        if public_key is not None:
+            self._pubkey_to_address[public_key.hex()] = address
 
     def remove_psk_channel(self, address: str) -> None:
         """Remove a PSK channel."""
@@ -359,7 +362,7 @@ class AlgoChat:
         return None
 
     def rotate_psk(self, address: str, new_psk: bytes) -> None:
-        """Rotate the PSK for a channel, preserving counter state.
+        """Rotate the PSK for a channel, resetting counter state.
 
         Args:
             address: The participant's Algorand address.
