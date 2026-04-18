@@ -114,6 +114,7 @@ class AlgoChat:
         self._conversations: list[Conversation] = []
         self._lock = asyncio.Lock()
         self._psk_channels: dict[str, tuple[bytes, PSKState]] = {}  # address -> (psk, state)
+        self._pubkey_to_address: dict[str, str] = {}  # pubkey_hex -> address
 
     @classmethod
     async def from_seed(
@@ -200,8 +201,10 @@ class AlgoChat:
         key = await discover_encryption_key(self._indexer, address)
 
         # Cache if found
-        if key is not None and self._config.cache_public_keys:
-            await self._public_key_cache.store(address, key.public_key)
+        if key is not None:
+            self._pubkey_to_address[key.public_key.hex()] = address
+            if self._config.cache_public_keys:
+                await self._public_key_cache.store(address, key.public_key)
 
         return key
 
@@ -364,12 +367,7 @@ class AlgoChat:
         """
         if len(new_psk) != 32:
             raise ValueError("PSK must be 32 bytes")
-        channel = self._psk_channels.get(address)
-        if channel is not None:
-            # Preserve state, reset counters for new key
-            self._psk_channels[address] = (new_psk, PSKState())
-        else:
-            self._psk_channels[address] = (new_psk, PSKState())
+        self._psk_channels[address] = (new_psk, PSKState())
 
     def _get_psk_state(self, address: str, psk: bytes) -> PSKState:
         """Get or create PSK state for an address."""
@@ -384,9 +382,7 @@ class AlgoChat:
 
     def _address_for_key(self, public_key: bytes) -> str:
         """Look up address for a public key, or use key hex as fallback."""
-        # Check known channels by iterating conversations
-        # Fallback to hex representation for lookup
-        return public_key.hex()
+        return self._pubkey_to_address.get(public_key.hex(), public_key.hex())
 
     async def process_transaction(self, tx: NoteTransaction) -> Optional[Message]:
         """Processes a transaction and extracts any chat message."""
@@ -418,6 +414,9 @@ class AlgoChat:
             other_key = key.public_key
         else:
             other_key = b""  # PSK envelopes carry their own sender key
+            # Register pubkey→address from the PSK envelope header
+            decoded_env = decode_psk_envelope(tx.note)
+            self._pubkey_to_address[decoded_env.sender_public_key.hex()] = tx.sender
 
         # Decrypt the message — auto-detects PSK vs standard
         psk = None
