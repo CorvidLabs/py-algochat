@@ -295,19 +295,16 @@ class AlgoChat:
     def _decrypt_psk(self, envelope_bytes: bytes, psk: Optional[bytes] = None) -> str:
         """Decrypt a PSK v1.1 envelope."""
         decoded = decode_psk_envelope(envelope_bytes)
+        sender_address = self._address_for_key(decoded.sender_public_key)
 
         # Look up PSK from channel state if not provided
         if psk is None:
-            sender_address = self._address_for_key(decoded.sender_public_key)
             channel = self._psk_channels.get(sender_address)
             if channel is not None:
                 psk = channel[0]
 
         if psk is None:
             raise PSKDecryptionError("No PSK available for this message")
-
-        # Validate counter
-        sender_address = self._address_for_key(decoded.sender_public_key)
         state = self._get_psk_state(sender_address, psk)
 
         if not validate_counter(state, decoded.ratchet_counter):
