@@ -11,6 +11,16 @@ Python implementation of the AlgoChat protocol for encrypted messaging on Algora
 
 ## Installation
 
+> **Note**: `py-algochat` is not yet published to PyPI. The first tagged release
+> will publish automatically via GitHub Actions (PyPI Trusted Publishing). Until
+> then, install from source:
+
+```bash
+pip install git+https://github.com/CorvidLabs/py-algochat.git
+```
+
+Once published, install from PyPI:
+
 ```bash
 pip install py-algochat
 ```
@@ -43,6 +53,26 @@ decoded = decode_envelope(encoded)
 result = decrypt_message(decoded, recipient_private, recipient_public)
 print(result.text)  # "Hello, World!"
 ```
+
+## Encrypted Key Storage
+
+Private encryption keys can be persisted to disk with at-rest encryption using
+`FileKeyStorage`. Keys are encrypted with AES-256-GCM using a key derived from a
+password via PBKDF2-HMAC-SHA256 (100,000 iterations) and written to
+`~/.algochat/keys/<address>.key` with `0600` permissions. The on-disk format
+(`salt | nonce | ciphertext | tag`, 92 bytes) interoperates with the Rust
+implementation.
+
+```python
+from algochat import FileKeyStorage
+
+storage = FileKeyStorage(password="a strong passphrase")
+await storage.store(private_key_bytes, address)
+recovered = await storage.retrieve(address)
+```
+
+For tests and ephemeral use, `InMemoryKeyStorage` stores keys unencrypted in
+memory and is not suitable for production.
 
 ## Protocol
 

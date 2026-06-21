@@ -18,6 +18,15 @@ from algochat.keys import derive_keys_from_seed, public_key_to_bytes
 from algochat.signature import sign_encryption_key
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
+import base64
+import hashlib
+
+
+def _encode_algorand_address(public_key: bytes) -> str:
+    """Build a valid Algorand address (with correct checksum) from a 32-byte key."""
+    checksum = hashlib.new("sha512_256", public_key).digest()[-4:]
+    return base64.b32encode(public_key + checksum).decode().rstrip("=")
+
 
 # ============================================================================
 # Mock Indexer
@@ -98,24 +107,37 @@ class TestAlgorandConfig:
 class TestDecodeAlgorandAddress:
     def test_returns_32_bytes(self):
         # A valid Algorand address is 58 chars (base32 of 36 bytes: 32 key + 4 checksum)
-        # Use a well-known test address pattern
-        import base64
         public_key = b"\x01" * 32
-        checksum = b"\x00" * 4
-        address = base64.b32encode(public_key + checksum).decode().rstrip("=")
+        address = _encode_algorand_address(public_key)
 
         result = _decode_algorand_address(address)
         assert len(result) == 32
         assert result == public_key
 
     def test_extracts_public_key_portion(self):
-        import base64
         key = bytes(range(32))
-        checksum = b"\xab\xcd\xef\x01"
-        address = base64.b32encode(key + checksum).decode().rstrip("=")
+        address = _encode_algorand_address(key)
 
         result = _decode_algorand_address(address)
         assert result == key
+
+    def test_rejects_invalid_checksum(self):
+        from algochat.blockchain import InvalidAddressError
+        import base64
+        public_key = b"\x01" * 32
+        bad_checksum = b"\x00" * 4  # Not the real SHA-512/256 checksum
+        address = base64.b32encode(public_key + bad_checksum).decode().rstrip("=")
+
+        with pytest.raises(InvalidAddressError):
+            _decode_algorand_address(address)
+
+    def test_rejects_wrong_length(self):
+        from algochat.blockchain import InvalidAddressError
+        import base64
+        # Only 32 bytes (no checksum)
+        address = base64.b32encode(b"\x01" * 32).decode().rstrip("=")
+        with pytest.raises(InvalidAddressError):
+            _decode_algorand_address(address)
 
 
 # ============================================================================
@@ -164,10 +186,8 @@ class TestParseKeyAnnouncement:
         # Build the announcement note: 32-byte key + 64-byte signature
         note = enc_pub_bytes + signature
 
-        # Build a valid address from the ed25519 public key
-        import base64
-        checksum = b"\x00" * 4
-        address = base64.b32encode(ed25519_public + checksum).decode().rstrip("=")
+        # Build a valid address (with correct checksum) from the ed25519 public key
+        address = _encode_algorand_address(ed25519_public)
 
         result = _parse_key_announcement(note, address)
         assert result is not None
@@ -180,10 +200,8 @@ class TestParseKeyAnnouncement:
         bad_signature = b"\x00" * 64
         note = key + bad_signature
 
-        # Use a valid-looking address
-        import base64
-        checksum = b"\x00" * 4
-        address = base64.b32encode(b"\x01" * 32 + checksum).decode().rstrip("=")
+        # Use a valid address (correct checksum) but a signature that won't verify
+        address = _encode_algorand_address(b"\x01" * 32)
 
         result = _parse_key_announcement(note, address)
         assert result is not None

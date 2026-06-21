@@ -15,11 +15,13 @@ from algochat.blockchain import (
 from algochat.client import AlgoChat, AlgoChatConfig
 from algochat.keys import public_key_to_bytes
 from algochat.models import MessageDirection
+from algochat.envelope import decode_envelope
 from algochat.storage import InMemoryKeyStorage
 from algochat.types import (
     InvalidEnvelopeError,
     PSKDecryptionError,
     PublicKeyNotFoundError,
+    UnverifiedKeyError,
 )
 
 
@@ -259,6 +261,45 @@ class TestEncryptDecrypt:
 
         plaintext = bob.decrypt(envelope, alice_pub)
         assert plaintext == "Hello Bob!"
+
+    @pytest.mark.asyncio
+    async def test_encrypt_decode_decrypt_roundtrip(self):
+        """Full client round-trip: encrypt -> decode_envelope -> decrypt."""
+        alice = await make_client(seed=ALICE_SEED, address=ALICE_ADDRESS)
+        bob = await make_client(seed=BOB_SEED, address=BOB_ADDRESS)
+
+        alice_pub = public_key_to_bytes(alice._encryption_public_key)
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+
+        # Alice encrypts -> wire bytes
+        wire = alice.encrypt("Round trip!", bob_pub)
+        assert isinstance(wire, bytes)
+
+        # The wire bytes decode into a well-formed envelope
+        envelope = decode_envelope(wire)
+        assert envelope.version == 0x01
+        assert envelope.protocol_id == 0x01
+        assert envelope.sender_public_key == alice_pub
+
+        # Bob decrypts the wire bytes back to plaintext
+        plaintext = bob.decrypt(wire, alice_pub)
+        assert plaintext == "Round trip!"
+
+    @pytest.mark.asyncio
+    async def test_from_seed_stores_key_as_bytes(self):
+        """from_seed must serialize the private key to bytes before storing."""
+        storage = InMemoryKeyStorage()
+        await AlgoChat.from_seed(
+            seed=ALICE_SEED,
+            address=ALICE_ADDRESS,
+            config=make_config(),
+            algod=MockAlgodClient(),
+            indexer=MockIndexerClient(),
+            key_storage=storage,
+        )
+        stored = await storage.retrieve(ALICE_ADDRESS)
+        assert isinstance(stored, bytes)
+        assert len(stored) == 32
 
     @pytest.mark.asyncio
     async def test_sender_can_decrypt_own_message(self):
@@ -588,6 +629,57 @@ class TestProcessTransaction:
 
         with pytest.raises(PublicKeyNotFoundError):
             await alice.process_transaction(tx)
+
+    @pytest.mark.asyncio
+    async def test_rejects_unverified_key_when_disallowed(self):
+        """With allow_unverified_keys=False, an unverified key must be rejected."""
+        config = AlgoChatConfig(
+            network=AlgorandConfig.localnet(), allow_unverified_keys=False
+        )
+        alice = await make_client(seed=ALICE_SEED, address=ALICE_ADDRESS, config=config)
+        bob = await make_client(seed=BOB_SEED, address=BOB_ADDRESS)
+
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+        alice_pub = public_key_to_bytes(alice._encryption_public_key)
+
+        # Seed Bob's key directly (no signature verification) → is_verified=False.
+        await alice.public_key_cache.store(BOB_ADDRESS, bob_pub)
+
+        envelope = bob.encrypt("Unverified!", alice_pub)
+        tx = NoteTransaction(
+            txid="tx-unverified",
+            sender=BOB_ADDRESS,
+            receiver=ALICE_ADDRESS,
+            note=envelope,
+            confirmed_round=100,
+            round_time=1700000000,
+        )
+
+        with pytest.raises(UnverifiedKeyError):
+            await alice.process_transaction(tx)
+
+    @pytest.mark.asyncio
+    async def test_allows_unverified_key_by_default(self):
+        """Default config (allow_unverified_keys=True) processes unverified keys."""
+        alice = await make_client(seed=ALICE_SEED, address=ALICE_ADDRESS)
+        bob = await make_client(seed=BOB_SEED, address=BOB_ADDRESS)
+
+        bob_pub = public_key_to_bytes(bob._encryption_public_key)
+        alice_pub = public_key_to_bytes(alice._encryption_public_key)
+        await alice.public_key_cache.store(BOB_ADDRESS, bob_pub)
+
+        envelope = bob.encrypt("OK by default", alice_pub)
+        tx = NoteTransaction(
+            txid="tx-default",
+            sender=BOB_ADDRESS,
+            receiver=ALICE_ADDRESS,
+            note=envelope,
+            confirmed_round=100,
+            round_time=1700000000,
+        )
+        message = await alice.process_transaction(tx)
+        assert message is not None
+        assert message.content == "OK by default"
 
 
 # ============================================================================
