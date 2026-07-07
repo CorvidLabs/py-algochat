@@ -10,24 +10,58 @@ from dataclasses import dataclass
 from typing import Optional
 
 import base64
+import hashlib
 
 from .models import DiscoveredKey
 from .signature import verify_encryption_key_bytes
 
 
+# Length in bytes of a decoded Algorand address: 32-byte public key + 4-byte checksum.
+_ADDRESS_DECODED_SIZE = 36
+_ADDRESS_PUBLIC_KEY_SIZE = 32
+_ADDRESS_CHECKSUM_SIZE = 4
+
+
+class InvalidAddressError(ValueError):
+    """Raised when an Algorand address fails to decode or its checksum is invalid."""
+
+
 def _decode_algorand_address(address: str) -> bytes:
     """Decodes an Algorand address to extract the 32-byte Ed25519 public key.
 
-    Algorand addresses are base32-encoded: 32 bytes public key + 4 bytes checksum.
+    Algorand addresses are base32-encoded (no padding) and decode to 36 bytes:
+    a 32-byte Ed25519 public key followed by a 4-byte checksum. The checksum is
+    the last 4 bytes of ``SHA-512/256(public_key)``. Addresses whose checksum
+    does not match are rejected to prevent accepting forged or corrupt addresses.
 
     Args:
         address: Algorand address string
 
     Returns:
         32-byte Ed25519 public key
+
+    Raises:
+        InvalidAddressError: If the address cannot be decoded or the checksum is
+            invalid.
     """
-    decoded = base64.b32decode(address + "=" * ((8 - len(address) % 8) % 8))
-    return decoded[:32]
+    try:
+        decoded = base64.b32decode(address + "=" * ((8 - len(address) % 8) % 8))
+    except Exception as exc:
+        raise InvalidAddressError(f"Address is not valid base32: {address}") from exc
+
+    if len(decoded) != _ADDRESS_DECODED_SIZE:
+        raise InvalidAddressError(
+            f"Decoded address must be {_ADDRESS_DECODED_SIZE} bytes, got {len(decoded)}"
+        )
+
+    public_key = decoded[:_ADDRESS_PUBLIC_KEY_SIZE]
+    checksum = decoded[_ADDRESS_PUBLIC_KEY_SIZE:]
+
+    expected_checksum = hashlib.new("sha512_256", public_key).digest()[-_ADDRESS_CHECKSUM_SIZE:]
+    if checksum != expected_checksum:
+        raise InvalidAddressError(f"Address checksum mismatch: {address}")
+
+    return public_key
 
 
 @dataclass

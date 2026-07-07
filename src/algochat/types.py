@@ -83,6 +83,11 @@ class PublicKeyNotFoundError(AlgoChatError):
     pass
 
 
+class UnverifiedKeyError(AlgoChatError):
+    """An encryption key failed Ed25519 verification and may not be trusted."""
+    pass
+
+
 class InvalidRecipientError(AlgoChatError):
     """Invalid recipient address."""
     pass

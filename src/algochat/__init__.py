@@ -19,6 +19,7 @@ from .types import (
     InvalidEnvelopeError,
     IndexerNotConfiguredError,
     PublicKeyNotFoundError,
+    UnverifiedKeyError,
     InvalidRecipientError,
     TransactionError,
     InsufficientBalanceError,
@@ -52,6 +53,7 @@ from .storage import (
     PublicKeyCache,
     EncryptionKeyStorage,
     InMemoryKeyStorage,
+    FileKeyStorage,
 )
 from .queue import (
     QueueConfig,
@@ -148,6 +150,7 @@ __all__ = [
     "PublicKeyCache",
     "EncryptionKeyStorage",
     "InMemoryKeyStorage",
+    "FileKeyStorage",
     # Errors
     "AlgoChatError",
     "InvalidPublicKeyError",
@@ -158,6 +161,7 @@ __all__ = [
     "InvalidEnvelopeError",
     "IndexerNotConfiguredError",
     "PublicKeyNotFoundError",
+    "UnverifiedKeyError",
     "InvalidRecipientError",
     "TransactionError",
     "InsufficientBalanceError",

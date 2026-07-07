@@ -19,6 +19,11 @@ from .blockchain import (
 )
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X25519PublicKey
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    NoEncryption,
+    PrivateFormat,
+)
 
 from .crypto import encrypt_message, decrypt_message
 from .envelope import encode_envelope, decode_envelope, is_chat_message
@@ -45,6 +50,7 @@ from .types import (
     InvalidEnvelopeError,
     PSKDecryptionError,
     PublicKeyNotFoundError,
+    UnverifiedKeyError,
 )
 
 
@@ -63,6 +69,14 @@ class AlgoChatConfig:
 
     cache_messages: bool = True
     """Whether to cache messages locally."""
+
+    allow_unverified_keys: bool = True
+    """Whether to allow using encryption keys that failed Ed25519 verification.
+
+    When ``False``, discovered keys whose signature could not be verified against
+    the address's Ed25519 key are rejected at use time, preventing key
+    substitution attacks. Defaults to ``True`` for backward compatibility.
+    """
 
     @classmethod
     def localnet(cls) -> "AlgoChatConfig":
@@ -115,6 +129,10 @@ class AlgoChat:
         self._lock = asyncio.Lock()
         self._psk_channels: dict[str, tuple[bytes, PSKState]] = {}  # address -> (psk, state)
         self._pubkey_to_address: dict[str, str] = {}  # pubkey_hex -> address
+        # Tracks the verification status of cached public keys, keyed by address.
+        # The PublicKeyCache only stores raw bytes, so verification status is kept
+        # here to avoid hardcoding is_verified=True for cached keys.
+        self._verification_status: dict[str, bool] = {}
 
     @classmethod
     async def from_seed(
@@ -144,12 +162,17 @@ class AlgoChat:
         if message_cache is None:
             message_cache = InMemoryMessageCache()
 
-        # Store the encryption key
-        await key_storage.store(encryption_private_key, address, False)
-
         # Derive the Ed25519 public key from the seed (private key)
         ed25519_private = Ed25519PrivateKey.from_private_bytes(seed)
         ed25519_public_key = ed25519_private.public_key().public_bytes_raw()
+
+        # Store the encryption key as raw bytes (storage expects bytes, not a key object)
+        encryption_private_bytes = encryption_private_key.private_bytes(
+            encoding=Encoding.Raw,
+            format=PrivateFormat.Raw,
+            encryption_algorithm=NoEncryption(),
+        )
+        await key_storage.store(encryption_private_bytes, address, False)
 
         return cls(
             address=address,
@@ -190,12 +213,19 @@ class AlgoChat:
             return list(self._conversations)
 
     async def discover_key(self, address: str) -> Optional[DiscoveredKey]:
-        """Discovers the encryption public key for an address."""
+        """Discovers the encryption public key for an address.
+
+        Never assumes a cached key is verified: the verification status is the
+        one established at discovery time and is preserved across cache hits.
+        """
         # Check cache first
         if self._config.cache_public_keys:
             cached = await self._public_key_cache.retrieve(address)
             if cached is not None:
-                return DiscoveredKey(public_key=cached, is_verified=True)
+                # Preserve the verification status from when the key was discovered.
+                # Default to False (unverified) rather than hardcoding True.
+                is_verified = self._verification_status.get(address, False)
+                return DiscoveredKey(public_key=cached, is_verified=is_verified)
 
         # Search indexer for key announcement
         key = await discover_encryption_key(self._indexer, address)
@@ -205,8 +235,27 @@ class AlgoChat:
             self._pubkey_to_address[key.public_key.hex()] = address
             if self._config.cache_public_keys:
                 await self._public_key_cache.store(address, key.public_key)
+                self._verification_status[address] = key.is_verified
 
         return key
+
+    def _ensure_key_usable(self, address: str, key: DiscoveredKey) -> None:
+        """Enforcement hook: rejects use of an unverified key unless allowed.
+
+        A key with ``is_verified=False`` has not been cryptographically bound to
+        the Algorand address via an Ed25519 signature, so using it risks a key
+        substitution attack. Callers must opt in to unverified keys explicitly
+        via the client config.
+
+        Raises:
+            UnverifiedKeyError: If the key is unverified and unverified keys are
+                not allowed.
+        """
+        if not key.is_verified and not self._config.allow_unverified_keys:
+            raise UnverifiedKeyError(
+                f"Encryption key for {address} is not verified. "
+                "Set allow_unverified_keys=True to use it anyway."
+            )
 
     def encrypt(
         self,
@@ -411,6 +460,8 @@ class AlgoChat:
             key = await self.discover_key(other_address)
             if key is None:
                 raise PublicKeyNotFoundError(f"Key not found for {other_address}")
+            # Enforce that unverified keys are not used unless explicitly allowed.
+            self._ensure_key_usable(other_address, key)
             other_key = key.public_key
         else:
             other_key = b""  # PSK envelopes carry their own sender key

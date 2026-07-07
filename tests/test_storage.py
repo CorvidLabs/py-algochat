@@ -1,11 +1,13 @@
 """Tests for storage interfaces and implementations."""
 
 import pytest
+import stat
 from datetime import datetime, timedelta
 from algochat.storage import (
     InMemoryMessageCache,
     PublicKeyCache,
     InMemoryKeyStorage,
+    FileKeyStorage,
 )
 from algochat.models import Message, MessageDirection
 
@@ -256,3 +258,107 @@ class TestInMemoryKeyStorage:
         await storage.store(b"\x01" * 32, "ALICE", require_biometric=True)
         result = await storage.retrieve("ALICE")
         assert result == b"\x01" * 32
+
+
+# ============================================================================
+# FileKeyStorage
+# ============================================================================
+
+
+class TestFileKeyStorage:
+    @pytest.fixture
+    def storage(self, tmp_path):
+        return FileKeyStorage(password="correct horse battery staple", base_dir=tmp_path)
+
+    @pytest.mark.asyncio
+    async def test_store_and_retrieve_roundtrip(self, storage):
+        key = b"\x07" * 32
+        await storage.store(key, "ALICE")
+        result = await storage.retrieve("ALICE")
+        assert result == key
+
+    @pytest.mark.asyncio
+    async def test_file_format_is_92_bytes(self, storage, tmp_path):
+        await storage.store(b"\x07" * 32, "ALICE")
+        data = (tmp_path / "ALICE.key").read_bytes()
+        # salt(32) + nonce(12) + ciphertext(32) + tag(16) = 92 bytes
+        assert len(data) == 92
+
+    @pytest.mark.asyncio
+    async def test_file_has_0600_permissions(self, storage, tmp_path):
+        await storage.store(b"\x07" * 32, "ALICE")
+        mode = stat.S_IMODE((tmp_path / "ALICE.key").stat().st_mode)
+        assert mode == 0o600
+
+    @pytest.mark.asyncio
+    async def test_key_is_encrypted_on_disk(self, storage, tmp_path):
+        key = b"\x07" * 32
+        await storage.store(key, "ALICE")
+        data = (tmp_path / "ALICE.key").read_bytes()
+        # The plaintext key must not appear verbatim in the encrypted file.
+        assert key not in data
+
+    @pytest.mark.asyncio
+    async def test_wrong_password_fails(self, tmp_path):
+        good = FileKeyStorage(password="right-password", base_dir=tmp_path)
+        await good.store(b"\x07" * 32, "ALICE")
+
+        bad = FileKeyStorage(password="wrong-password", base_dir=tmp_path)
+        with pytest.raises(Exception):
+            await bad.retrieve("ALICE")
+
+    @pytest.mark.asyncio
+    async def test_retrieve_missing_raises(self, storage):
+        with pytest.raises(KeyError):
+            await storage.retrieve("NOBODY")
+
+    @pytest.mark.asyncio
+    async def test_has_key(self, storage):
+        assert await storage.has_key("ALICE") is False
+        await storage.store(b"\x07" * 32, "ALICE")
+        assert await storage.has_key("ALICE") is True
+
+    @pytest.mark.asyncio
+    async def test_delete(self, storage):
+        await storage.store(b"\x07" * 32, "ALICE")
+        await storage.delete("ALICE")
+        assert await storage.has_key("ALICE") is False
+
+    @pytest.mark.asyncio
+    async def test_delete_nonexistent(self, storage):
+        await storage.delete("NOBODY")  # Should not raise
+
+    @pytest.mark.asyncio
+    async def test_list_stored_addresses(self, storage):
+        await storage.store(b"\x01" * 32, "ALICE")
+        await storage.store(b"\x02" * 32, "BOB")
+        addrs = await storage.list_stored_addresses()
+        assert set(addrs) == {"ALICE", "BOB"}
+
+    @pytest.mark.asyncio
+    async def test_list_empty(self, storage):
+        assert await storage.list_stored_addresses() == []
+
+    @pytest.mark.asyncio
+    async def test_overwrite_key(self, storage):
+        await storage.store(b"\x01" * 32, "ALICE")
+        await storage.store(b"\x02" * 32, "ALICE")
+        result = await storage.retrieve("ALICE")
+        assert result == b"\x02" * 32
+
+    @pytest.mark.asyncio
+    async def test_rejects_wrong_key_length(self, storage):
+        with pytest.raises(ValueError):
+            await storage.store(b"\x01" * 16, "ALICE")
+
+    @pytest.mark.asyncio
+    async def test_different_salts_per_store(self, storage, tmp_path):
+        """Each store call must use a fresh random salt and nonce."""
+        await storage.store(b"\x07" * 32, "ALICE")
+        first = (tmp_path / "ALICE.key").read_bytes()
+        await storage.store(b"\x07" * 32, "ALICE")
+        second = (tmp_path / "ALICE.key").read_bytes()
+        # Same key + password but different salt/nonce → different ciphertext.
+        assert first != second
+        # But both decrypt to the same value.
+        assert await storage.retrieve("ALICE") == b"\x07" * 32

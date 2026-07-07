@@ -8,8 +8,14 @@ caching public keys, and persisting encryption keys.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional
 import asyncio
+import os
+
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.hashes import SHA256
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from .models import Message
 
@@ -244,3 +250,147 @@ class InMemoryKeyStorage(EncryptionKeyStorage):
     async def list_stored_addresses(self) -> list[str]:
         async with self._lock:
             return list(self._keys.keys())
+
+
+# File format and KDF constants for FileKeyStorage. These match the on-disk
+# layout used by the Rust implementation so key files interoperate across
+# implementations.
+_FILE_SALT_SIZE = 32
+_FILE_NONCE_SIZE = 12
+_FILE_CIPHERTEXT_SIZE = 32  # encrypted 32-byte X25519 private key
+_FILE_TAG_SIZE = 16
+_FILE_TOTAL_SIZE = (
+    _FILE_SALT_SIZE + _FILE_NONCE_SIZE + _FILE_CIPHERTEXT_SIZE + _FILE_TAG_SIZE
+)  # 92 bytes
+_PBKDF2_ITERATIONS = 100_000
+_PRIVATE_KEY_SIZE = 32
+
+
+class FileKeyStorage(EncryptionKeyStorage):
+    """At-rest encrypted key storage backed by the local filesystem.
+
+    Each private key is encrypted with AES-256-GCM using a key derived from a
+    password via PBKDF2-HMAC-SHA256 (100,000 iterations), then written to
+    ``~/.algochat/keys/<address>.key`` with mode ``0600``.
+
+    On-disk format (92 bytes total)::
+
+        salt        (32 bytes)
+        nonce       (12 bytes)
+        ciphertext  (32 bytes)  # encrypted private key
+        tag         (16 bytes)  # AES-GCM authentication tag
+
+    This layout interoperates with the Rust implementation.
+
+    .. warning::
+        AES-GCM in the ``cryptography`` library appends the tag to the
+        ciphertext, so the stored ``ciphertext+tag`` block is the 48-byte
+        output of a single ``AESGCM.encrypt`` call.
+    """
+
+    def __init__(self, password: str, base_dir: Optional[Path] = None) -> None:
+        """Creates a file-backed key storage.
+
+        Args:
+            password: Password used to derive the AES-256 encryption key.
+            base_dir: Directory in which to store key files. Defaults to
+                ``~/.algochat/keys``.
+        """
+        if base_dir is None:
+            base_dir = Path.home() / ".algochat" / "keys"
+        self._base_dir = Path(base_dir)
+        self._password = password.encode("utf-8")
+        self._lock = asyncio.Lock()
+
+    def _key_path(self, address: str) -> Path:
+        return self._base_dir / f"{address}.key"
+
+    def _derive_key(self, salt: bytes) -> bytes:
+        kdf = PBKDF2HMAC(
+            algorithm=SHA256(),
+            length=32,
+            salt=salt,
+            iterations=_PBKDF2_ITERATIONS,
+        )
+        return kdf.derive(self._password)
+
+    def _encrypt(self, private_key: bytes) -> bytes:
+        salt = os.urandom(_FILE_SALT_SIZE)
+        nonce = os.urandom(_FILE_NONCE_SIZE)
+        derived = self._derive_key(salt)
+        # AESGCM.encrypt returns ciphertext || tag (48 bytes for a 32-byte input).
+        ciphertext_with_tag = AESGCM(derived).encrypt(nonce, private_key, None)
+        return salt + nonce + ciphertext_with_tag
+
+    def _decrypt(self, data: bytes) -> bytes:
+        if len(data) != _FILE_TOTAL_SIZE:
+            raise ValueError(
+                f"Key file must be {_FILE_TOTAL_SIZE} bytes, got {len(data)}"
+            )
+        salt = data[:_FILE_SALT_SIZE]
+        offset = _FILE_SALT_SIZE
+        nonce = data[offset : offset + _FILE_NONCE_SIZE]
+        offset += _FILE_NONCE_SIZE
+        ciphertext_with_tag = data[offset:]
+        derived = self._derive_key(salt)
+        return AESGCM(derived).decrypt(nonce, ciphertext_with_tag, None)
+
+    async def store(
+        self, private_key: bytes, address: str, require_biometric: bool = False
+    ) -> None:
+        if len(private_key) != _PRIVATE_KEY_SIZE:
+            raise ValueError(
+                f"Private key must be {_PRIVATE_KEY_SIZE} bytes, got {len(private_key)}"
+            )
+
+        def _write() -> None:
+            self._base_dir.mkdir(parents=True, exist_ok=True)
+            encrypted = self._encrypt(private_key)
+            path = self._key_path(address)
+            # Write with restrictive permissions, then enforce 0600 in case of umask.
+            fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            try:
+                os.write(fd, encrypted)
+            finally:
+                os.close(fd)
+            os.chmod(path, 0o600)
+
+        async with self._lock:
+            await asyncio.to_thread(_write)
+
+    async def retrieve(self, address: str) -> bytes:
+        path = self._key_path(address)
+
+        def _read() -> bytes:
+            if not path.exists():
+                raise KeyError(f"Key not found for address: {address}")
+            return path.read_bytes()
+
+        async with self._lock:
+            data = await asyncio.to_thread(_read)
+            return self._decrypt(data)
+
+    async def has_key(self, address: str) -> bool:
+        async with self._lock:
+            return await asyncio.to_thread(self._key_path(address).exists)
+
+    async def delete(self, address: str) -> None:
+        path = self._key_path(address)
+
+        def _delete() -> None:
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+
+        async with self._lock:
+            await asyncio.to_thread(_delete)
+
+    async def list_stored_addresses(self) -> list[str]:
+        def _list() -> list[str]:
+            if not self._base_dir.exists():
+                return []
+            return [p.stem for p in self._base_dir.glob("*.key")]
+
+        async with self._lock:
+            return await asyncio.to_thread(_list)
