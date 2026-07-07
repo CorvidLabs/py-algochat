@@ -1,0 +1,12 @@
+[tasks]
+test = "python -m pytest tests/"
+install = "pip install -e .[dev]"
+
+[lanes.check]
+steps = ["test"]
+
+[lanes.ci]
+steps = ["test"]
+
+[lanes.pre-commit]
+steps = ["test"]
