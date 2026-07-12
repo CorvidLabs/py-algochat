@@ -1,12 +1,14 @@
 [tasks]
-test = "python -m pytest tests/"
+test = "python3 -m pytest tests/"
+lint = "ruff check src/ tests/"
 install = "pip install -e .[dev]"
 
-[lanes.check]
-steps = ["test"]
+[lanes.verify]
+description = "Run the Python AlgoChat protocol tests and lint checks"
+steps = ["lint", "test"]
 
 [lanes.ci]
-steps = ["test"]
+steps = ["lint", "test"]
 
 [lanes.pre-commit]
-steps = ["test"]
+steps = ["lint", "test"]
