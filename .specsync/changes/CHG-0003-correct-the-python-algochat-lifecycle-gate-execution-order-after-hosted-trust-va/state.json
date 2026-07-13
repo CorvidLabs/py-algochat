@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "CHG-0003-correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va",
+  "slug": "correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va",
+  "title": "Correct the Python AlgoChat lifecycle gate execution order after hosted Trust validation",
+  "description": "Correct the Python AlgoChat lifecycle gate execution order after hosted Trust validation",
+  "kind": "bug_fix",
+  "state": "accepted",
+  "canonical_applied": true,
+  "base_commit": "dc40f6a03c76208502361157b3af0144579bf3bf",
+  "created_at": 1783973174,
+  "updated_at": 1783980103,
+  "affected_specs": [
+    "algochat"
+  ],
+  "affected_paths": [
+    ".github/workflows/trust.yml",
+    ".trust.toml",
+    "specs/algochat"
+  ],
+  "no_spec_change": false,
+  "no_spec_change_rationale": null,
+  "acceptance_criteria": [
+    "The immutable SpecSync 5.0.1 action completes strict 100 percent coverage and lifecycle enforcement before Trust; Trust 1.0.0 completes native Ruff and Pytest verification without a missing specsync executable; no product source or test files change"
+  ],
+  "selected_artifacts": [
+    "context",
+    "testing",
+    "tasks",
+    "design"
+  ],
+  "dependencies": [],
+  "answers": {
+    "architecture_risk": "no",
+    "public_contract": "no"
+  }
+}

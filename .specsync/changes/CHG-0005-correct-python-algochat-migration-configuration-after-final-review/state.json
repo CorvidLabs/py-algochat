@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "CHG-0005-correct-python-algochat-migration-configuration-after-final-review",
+  "slug": "correct-python-algochat-migration-configuration-after-final-review",
+  "title": "Correct Python AlgoChat migration configuration after final review",
+  "description": "Correct Python AlgoChat migration configuration after final review",
+  "kind": "bug_fix",
+  "state": "accepted",
+  "canonical_applied": true,
+  "base_commit": "8fb14093995cb99c480e875a00a150bac8b38b36",
+  "created_at": 1783973790,
+  "updated_at": 1783979915,
+  "affected_specs": [],
+  "affected_paths": [
+    "fledge.toml",
+    ".specsync/sdd.json",
+    ".claude",
+    ".cursor",
+    ".gemini"
+  ],
+  "no_spec_change": true,
+  "no_spec_change_rationale": "These corrections affect development-tool bootstrap, meaningful-file policy, and generated agent command parsing only; the AlgoChat protocol, public API, canonical behavioral requirements, source, and tests are unchanged.",
+  "acceptance_criteria": [
+    "A clean Fledge install task installs Ruff before verification; specs and all four agent integration directories are meaningful SDD paths; Gemini passes rendered change arguments; create-spec commands classify the complete remaining input before choosing a module name; strict SpecSync and native tests pass with no source changes"
+  ],
+  "selected_artifacts": [
+    "context",
+    "testing",
+    "tasks",
+    "design"
+  ],
+  "dependencies": [],
+  "answers": {
+    "architecture_risk": "no",
+    "public_contract": "no"
+  }
+}

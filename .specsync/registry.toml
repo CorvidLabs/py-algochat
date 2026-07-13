@@ -1,0 +1,5 @@
+[registry]
+name = "py-algochat"
+
+[specs]
+algochat = "specs/algochat/algochat.spec.md"

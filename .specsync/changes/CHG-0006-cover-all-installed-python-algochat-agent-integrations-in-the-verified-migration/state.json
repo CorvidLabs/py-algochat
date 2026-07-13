@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "id": "CHG-0006-cover-all-installed-python-algochat-agent-integrations-in-the-verified-migration",
+  "slug": "cover-all-installed-python-algochat-agent-integrations-in-the-verified-migration",
+  "title": "Cover all installed Python AlgoChat agent integrations in the verified migration",
+  "description": "Cover all installed Python AlgoChat agent integrations in the verified migration",
+  "kind": "bug_fix",
+  "state": "accepted",
+  "canonical_applied": true,
+  "base_commit": "eb6cc1c64faae33db75602cc3e2098e5db0d7e04",
+  "created_at": 1783974455,
+  "updated_at": 1783979926,
+  "affected_specs": [],
+  "affected_paths": [
+    ".claude",
+    ".codex",
+    ".cursor",
+    ".gemini",
+    ".specsync/sdd.json"
+  ],
+  "no_spec_change": true,
+  "no_spec_change_rationale": "This change records lifecycle coverage for the already-installed agent integration files after they became meaningful paths; it does not change the AlgoChat protocol, canonical contract, source, tests, or public API.",
+  "acceptance_criteria": [
+    "Strict hosted-equivalent SpecSync accepts every meaningful Claude",
+    "Codex",
+    "Cursor",
+    "and Gemini integration path as covered; all four agent integrations report installed; no source or test files change"
+  ],
+  "selected_artifacts": [
+    "context",
+    "testing",
+    "tasks",
+    "design"
+  ],
+  "dependencies": [],
+  "answers": {
+    "architecture_risk": "no",
+    "public_contract": "no"
+  }
+}

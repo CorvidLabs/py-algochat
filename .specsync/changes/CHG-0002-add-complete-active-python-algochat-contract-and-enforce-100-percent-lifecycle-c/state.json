@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c",
+  "slug": "add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c",
+  "title": "Add complete active Python AlgoChat contract and enforce 100 percent lifecycle coverage",
+  "description": "Add complete active Python AlgoChat contract and enforce 100 percent lifecycle coverage",
+  "kind": "migration",
+  "state": "accepted",
+  "canonical_applied": true,
+  "base_commit": "3a2d5a2717013561e2efb6703c1ae6fddd984a64",
+  "created_at": 1783972364,
+  "updated_at": 1783980101,
+  "affected_specs": [
+    "algochat"
+  ],
+  "affected_paths": [
+    "src/algochat",
+    "tests",
+    "specs/algochat",
+    ".specsync/sdd.json",
+    ".trust.toml",
+    "fledge.toml"
+  ],
+  "no_spec_change": false,
+  "no_spec_change_rationale": null,
+  "acceptance_criteria": [
+    "Strict SpecSync passes with 17/17 files and 100 percent LOC and export coverage; five stable requirements map to existing native tests; lifecycle enforcement",
+    "Ruff",
+    "and all Pytest tests pass"
+  ],
+  "selected_artifacts": [
+    "context",
+    "research",
+    "design",
+    "plan",
+    "tasks",
+    "testing",
+    "docs"
+  ],
+  "dependencies": [],
+  "answers": {
+    "architecture_risk": "yes",
+    "public_contract": "no"
+  }
+}
