@@ -1,0 +1,21 @@
+{
+  "timestamp": 1783974495,
+  "commit": "eb6cc1c64faae33db75602cc3e2098e5db0d7e04",
+  "contract_digest": "9ebe1dc431766a25a23a7085b97919a1bca660a18b0ae3f6bc8846a5fc72f87c",
+  "workspace_digest": "455679f53df5b09b8ba73ff0f29d2961eff69638c9a008b1fcc14feb41462695",
+  "acceptance_input_digest": "afc6a5ae8ad6cf868bd87dacef81127779247b30b7ed570bf6ec95fa13166a6b",
+  "passed": true,
+  "commands": [
+    {
+      "command": "python3 -m pytest tests/",
+      "success": true,
+      "exit_code": 0
+    },
+    {
+      "command": "ruff check src/ tests/",
+      "success": true,
+      "exit_code": 0
+    }
+  ],
+  "requirement_ids": []
+}

@@ -1,0 +1,19 @@
+{
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783974489,
+      "digest": "9ebe1dc431766a25a23a7085b97919a1bca660a18b0ae3f6bc8846a5fc72f87c",
+      "note": "Reviewed the hosted uncovered-path failure and the explicit all-agent coverage successor. The installed integration contents remain unchanged; strict meaningful-path enforcement is preserved with no product changes."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783974505,
+      "digest": "ed9a8d5b11e970c2896cb4a50aacdd03888dae8b4c9c324a117004b0264b76e9",
+      "note": "Hosted uncovered-path correction verified: all four agent integrations are explicitly covered and installed; strict 100 percent SpecSync, Ruff, and 306 tests pass, with 198 documented sibling-fixture skips and no product changes."
+    }
+  ],
+  "reopenings": []
+}
