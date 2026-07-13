@@ -38,8 +38,8 @@ Acceptance Criteria
 
 ### REQ-algochat-005
 
-Native verification SHALL lint the implementation and run the complete deterministic Python test suite while enforcing the SpecSync lifecycle at 100% source coverage.
+Native verification SHALL lint the implementation and run the complete deterministic Python test suite, while the Trust lifecycle gate separately enforces SpecSync at 100% source coverage.
 
 Acceptance Criteria
 
-- The Fledge verification lane passes SpecSync lifecycle validation, Ruff, and Pytest without external credentials.
+- The Fledge verification lane passes Ruff and Pytest without external credentials, and the Trust lifecycle command passes strict SpecSync at 100% coverage.

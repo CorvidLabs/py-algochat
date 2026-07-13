@@ -5,4 +5,4 @@ artifact: design
 
 # Design
 
-Use one active `algochat` module for all 17 package files because they jointly implement one wire protocol. Record five stable behavioral requirements, map them to existing focused tests, protect public documentation and agent policy, and run SpecSync lifecycle validation before Ruff and Pytest in the existing Fledge lane.
+Use one active `algochat` module for all 17 package files because they jointly implement one wire protocol. Record five stable behavioral requirements, map them to existing focused tests, protect public documentation and agent policy, keep Ruff and Pytest in Fledge, and enforce strict SpecSync separately as Trust's lifecycle command.
