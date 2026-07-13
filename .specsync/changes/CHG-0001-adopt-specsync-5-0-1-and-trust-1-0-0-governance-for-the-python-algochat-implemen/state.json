@@ -5,10 +5,10 @@
   "title": "Adopt SpecSync 5.0.1 and Trust 1.0.0 governance for the Python AlgoChat implementation",
   "description": "Adopt SpecSync 5.0.1 and Trust 1.0.0 governance for the Python AlgoChat implementation",
   "kind": "migration",
-  "state": "draft",
+  "state": "implementing",
   "base_commit": "d4c523fe51f26b7fee57bc11ddbc3cbe7547d15a",
   "created_at": 1783884699,
-  "updated_at": 1783884710,
+  "updated_at": 1783958479,
   "affected_specs": [],
   "affected_paths": [
     "src/",

@@ -1,3 +1,11 @@
 {
-  "approvals": []
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783958399,
+      "digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
+      "note": "Definition approval after review of truthful completed preparation/configuration tasks and previously completed native verification; hosted CI and closing approval remain later gates."
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 ---
 id: CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-python-algochat-implemen
-state: draft
+state: implementing
 type: migration
 base_commit: d4c523fe51f26b7fee57bc11ddbc3cbe7547d15a
 ---
