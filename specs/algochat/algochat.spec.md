@@ -1,6 +1,6 @@
 ---
 module: algochat
-version: 1
+version: 2
 status: active
 files:
   - src/algochat/__init__.py
@@ -198,3 +198,4 @@ Then the recipient decodes and decrypts the original plaintext and tampering fai
 | Version | Date | Changes |
 |---|---|---|
 | 1 | 2026-07-13 | Initial active contract for the existing Python implementation |
+| 2026-07-13 | CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c: Add complete active Python AlgoChat contract and enforce 100 percent lifecycle coverage |

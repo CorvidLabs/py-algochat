@@ -43,3 +43,4 @@ Native verification SHALL lint the implementation and run the complete determini
 Acceptance Criteria
 
 - The Fledge verification lane passes Ruff and Pytest without external credentials, and the Trust lifecycle command passes strict SpecSync at 100% coverage.
+
