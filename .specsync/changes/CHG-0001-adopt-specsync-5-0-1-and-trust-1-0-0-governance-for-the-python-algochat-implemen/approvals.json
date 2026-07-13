@@ -14,5 +14,46 @@
       "digest": "66aa587564becac7ba65db6d3e087b0f5d64446d5cac3e43a1795f2b3d5b2ad4",
       "note": "Closing approval after committed-head Python 3.12 verification passed: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped; hosted 3.10-3.12 remains independent."
     }
+  ],
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-python-algochat-implemen",
+      "actor": "user:0xLeif",
+      "reason": "The 100% canonical successor and lifecycle enforcement update changed final governance inputs; refresh the original migration evidence after the successor is accepted.",
+      "timestamp": 1783972436,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783959093,
+        "digest": "66aa587564becac7ba65db6d3e087b0f5d64446d5cac3e43a1795f2b3d5b2ad4",
+        "note": "Closing approval after committed-head Python 3.12 verification passed: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped; hosted 3.10-3.12 remains independent."
+      },
+      "prior_verification": {
+        "timestamp": 1783959087,
+        "commit": "ca326f49224ecaa782334140f523a101ba17b545",
+        "contract_digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
+        "workspace_digest": "1413dc61f06dbe90da9634daf79932d7b40de46914fd23d851d528bfdb94f713",
+        "acceptance_input_digest": "850a071388e8f2d329637d4c93cea760f4650096b03f692f6d3576873f19454a",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "850a071388e8f2d329637d4c93cea760f4650096b03f692f6d3576873f19454a",
+      "current_acceptance_input_digest": "7774f1fc710120434ade48dd569e69fa3b5fcc34cd6a70bcbf566eed533349bc"
+    }
   ]
 }

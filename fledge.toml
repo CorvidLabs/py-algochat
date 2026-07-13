@@ -2,10 +2,11 @@
 test = "python3 -m pytest tests/"
 lint = "ruff check src/ tests/"
 install = "pip install -e .[dev]"
+specsync = "specsync change check --strict --require-coverage 100"
 
 [lanes.verify]
 description = "Run the Python AlgoChat protocol tests and lint checks"
-steps = ["lint", "test"]
+steps = ["specsync", "lint", "test"]
 
 [lanes.ci]
 steps = ["lint", "test"]

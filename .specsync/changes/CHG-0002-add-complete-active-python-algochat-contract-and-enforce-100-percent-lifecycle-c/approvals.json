@@ -1,0 +1,12 @@
+{
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783972425,
+      "digest": "10aa6b569afc8f86dfa09c3b5d03efb72a9f17f3fdeb7c5bd4b87b1a54482e32",
+      "note": "Reviewed active Python contract, five stable implementation-backed requirements, 100% source policy, and native evidence mappings; no product code changes."
+    }
+  ],
+  "reopenings": []
+}
