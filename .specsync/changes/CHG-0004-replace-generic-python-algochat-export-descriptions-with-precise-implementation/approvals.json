@@ -20,7 +20,192 @@
       "timestamp": 1783973586,
       "digest": "a8ae41fe16fe8c16a3c03ea263823373b6bb47ac9ed6dc92bf89fcb542ce7861",
       "note": "All 103 exports retain exact coverage and now have specific implementation-backed contracts. Native evidence is Ruff clean with 306 tests passed and 198 documented sibling-fixture interoperability skips; no source or test files changed."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783979904,
+      "digest": "dc8738017a2c74b8e68f5288ff9692fc6e36bcb403e9bc03a465bb0e4d020632",
+      "note": "Reaccepted after fresh Ruff and deterministic Pytest verification; canonical export descriptions were reviewed against the implementation."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783979998,
+      "digest": "9a34b37bc30a2a7f3ccba6659109e2ca8c1d72026502fa71899b3fbc0a58acf6",
+      "note": "Reaccepted against final canonical descriptions after fresh Ruff and 306-pass native verification."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783980050,
+      "digest": "931e76d7c3c45fc72a27cfadf2db4493af5ac5fe229850bf586ed9884a4de827",
+      "note": "Reaccepted after the non-semantic testing-evidence correction and fresh Ruff plus deterministic Pytest verification."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783980105,
+      "digest": "fc0505ee093a18bf4abf3a789168e1224df8f250828904d771f9f06b6dcd5edf",
+      "note": "Reaccepted after the non-semantic trailing-whitespace correction and fresh Ruff plus deterministic Pytest verification."
     }
   ],
-  "reopenings": []
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation",
+      "actor": "user:0xLeif",
+      "reason": "Fresh implementation-backed review corrected canonical contract wording, fixture-evidence scope, and generated agent integrations; rerun native verification without changing product code.",
+      "timestamp": 1783979739,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783973586,
+        "digest": "a8ae41fe16fe8c16a3c03ea263823373b6bb47ac9ed6dc92bf89fcb542ce7861",
+        "note": "All 103 exports retain exact coverage and now have specific implementation-backed contracts. Native evidence is Ruff clean with 306 tests passed and 198 documented sibling-fixture interoperability skips; no source or test files changed."
+      },
+      "prior_verification": {
+        "timestamp": 1783973579,
+        "commit": "dc40f6a03c76208502361157b3af0144579bf3bf",
+        "contract_digest": "ef6093991c4754125210620a91749f5f788b214088e11dd9f51ff52ec70f26cb",
+        "workspace_digest": "8361a0cc4612df5614cedc873538d2c221e51f071801c1fadfedc63b7573ac12",
+        "acceptance_input_digest": "40ed98444eb82db1e7b55866fae01ce524399ca63aa9ce26e919b91613dff04f",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "40ed98444eb82db1e7b55866fae01ce524399ca63aa9ce26e919b91613dff04f",
+      "current_acceptance_input_digest": "b30a1ff0efadf108587a28ce847c3ca58449c2385eae8344a6e3fe29fa10a6cd"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation",
+      "actor": "user:0xLeif",
+      "reason": "Final successor CHG-0007 corrected three implementation-backed export rows and discovery ordering; refresh the prior description change against final canonical truth.",
+      "timestamp": 1783979977,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783979904,
+        "digest": "dc8738017a2c74b8e68f5288ff9692fc6e36bcb403e9bc03a465bb0e4d020632",
+        "note": "Reaccepted after fresh Ruff and deterministic Pytest verification; canonical export descriptions were reviewed against the implementation."
+      },
+      "prior_verification": {
+        "timestamp": 1783979891,
+        "commit": "7949c9bbadac618e0ec1108e2055402a4c17b10e",
+        "contract_digest": "ef6093991c4754125210620a91749f5f788b214088e11dd9f51ff52ec70f26cb",
+        "workspace_digest": "66388210aaa8040ca6ff3335803cf64069a581b706be26660a3b9f8577a08c87",
+        "acceptance_input_digest": "b30a1ff0efadf108587a28ce847c3ca58449c2385eae8344a6e3fe29fa10a6cd",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "b30a1ff0efadf108587a28ce847c3ca58449c2385eae8344a6e3fe29fa10a6cd",
+      "current_acceptance_input_digest": "9b68015c14ea577cb7bb4a065a9b1920d9c606a70c9f1b840778951ee72cd50e"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation",
+      "actor": "user:0xLeif",
+      "reason": "Canonical testing evidence now truthfully distinguishes required native vectors from optional absent-sibling fixtures; refresh accepted evidence without changing product code.",
+      "timestamp": 1783980047,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783979998,
+        "digest": "9a34b37bc30a2a7f3ccba6659109e2ca8c1d72026502fa71899b3fbc0a58acf6",
+        "note": "Reaccepted against final canonical descriptions after fresh Ruff and 306-pass native verification."
+      },
+      "prior_verification": {
+        "timestamp": 1783979979,
+        "commit": "7949c9bbadac618e0ec1108e2055402a4c17b10e",
+        "contract_digest": "ef6093991c4754125210620a91749f5f788b214088e11dd9f51ff52ec70f26cb",
+        "workspace_digest": "cb66f8f4d0e7dca4c7bbd7749d26e29fbf33bc4fee85e4e040ec6f12b6123948",
+        "acceptance_input_digest": "9b68015c14ea577cb7bb4a065a9b1920d9c606a70c9f1b840778951ee72cd50e",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "9b68015c14ea577cb7bb4a065a9b1920d9c606a70c9f1b840778951ee72cd50e",
+      "current_acceptance_input_digest": "988d3f0e0c35b76446c2626c38827b7141109abb2ffa0a8dab9060b752f48601"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation",
+      "actor": "user:0xLeif",
+      "reason": "Remove generated trailing whitespace from the final canonical spec; semantic content is unchanged.",
+      "timestamp": 1783980103,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783980050,
+        "digest": "931e76d7c3c45fc72a27cfadf2db4493af5ac5fe229850bf586ed9884a4de827",
+        "note": "Reaccepted after the non-semantic testing-evidence correction and fresh Ruff plus deterministic Pytest verification."
+      },
+      "prior_verification": {
+        "timestamp": 1783980049,
+        "commit": "7949c9bbadac618e0ec1108e2055402a4c17b10e",
+        "contract_digest": "ef6093991c4754125210620a91749f5f788b214088e11dd9f51ff52ec70f26cb",
+        "workspace_digest": "5fea92ab8e53468c04ee8aa41bfa8a755b258e81bae1d937fac73ffe51305170",
+        "acceptance_input_digest": "988d3f0e0c35b76446c2626c38827b7141109abb2ffa0a8dab9060b752f48601",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "988d3f0e0c35b76446c2626c38827b7141109abb2ffa0a8dab9060b752f48601",
+      "current_acceptance_input_digest": "a76865a0f07e526330f38860bd81120ec9ef718b89a144e7c733c7063b444582"
+    }
+  ]
 }

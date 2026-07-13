@@ -20,7 +20,54 @@
       "timestamp": 1783973946,
       "digest": "e76f3911f6e729f145a4881d7418e08b0a1d45209336192a5bc79963a32ba77e",
       "note": "Final review corrections validated: strict Fledge configuration and TOML/JSON parsing pass, all four agent integrations remain installed, Ruff is clean, 306 tests pass, and 198 documented sibling-fixture cases skip. No source or test files changed."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783979915,
+      "digest": "b034aeda04e6ef055263e212703d547569d09ff0ffe418779f2125120d4e31b2",
+      "note": "Reaccepted after fresh Ruff and deterministic Pytest verification of the reviewed migration configuration."
     }
   ],
-  "reopenings": []
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0005-correct-python-algochat-migration-configuration-after-final-review",
+      "actor": "user:0xLeif",
+      "reason": "Fresh implementation-backed review corrected canonical contract wording, fixture-evidence scope, and generated agent integrations; rerun native verification without changing product code.",
+      "timestamp": 1783979739,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783973946,
+        "digest": "e76f3911f6e729f145a4881d7418e08b0a1d45209336192a5bc79963a32ba77e",
+        "note": "Final review corrections validated: strict Fledge configuration and TOML/JSON parsing pass, all four agent integrations remain installed, Ruff is clean, 306 tests pass, and 198 documented sibling-fixture cases skip. No source or test files changed."
+      },
+      "prior_verification": {
+        "timestamp": 1783973928,
+        "commit": "8fb14093995cb99c480e875a00a150bac8b38b36",
+        "contract_digest": "f8e1a191be7cbec08f162808c734ef5f56e6ec59b26490195b676985417f15a8",
+        "workspace_digest": "455679f53df5b09b8ba73ff0f29d2961eff69638c9a008b1fcc14feb41462695",
+        "acceptance_input_digest": "792c1751157815825e1d258c75d702781aac7215936d5a11cd26eda10f635dd0",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "792c1751157815825e1d258c75d702781aac7215936d5a11cd26eda10f635dd0",
+      "current_acceptance_input_digest": "192a43363a0dea900cb463c0172af29e6bb54a8d18b430656088ffb73ca91983"
+    }
+  ]
 }

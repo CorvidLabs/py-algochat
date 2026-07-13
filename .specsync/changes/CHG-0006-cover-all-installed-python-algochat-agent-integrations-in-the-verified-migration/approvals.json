@@ -13,7 +13,54 @@
       "timestamp": 1783974505,
       "digest": "ed9a8d5b11e970c2896cb4a50aacdd03888dae8b4c9c324a117004b0264b76e9",
       "note": "Hosted uncovered-path correction verified: all four agent integrations are explicitly covered and installed; strict 100 percent SpecSync, Ruff, and 306 tests pass, with 198 documented sibling-fixture skips and no product changes."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783979926,
+      "digest": "715d386e47059a06fb4097a1ac5269b114b2587d6632c88374756f761f23ae3e",
+      "note": "Reaccepted after fresh Ruff and deterministic Pytest verification with all four generated agent integrations present."
     }
   ],
-  "reopenings": []
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0006-cover-all-installed-python-algochat-agent-integrations-in-the-verified-migration",
+      "actor": "user:0xLeif",
+      "reason": "Fresh implementation-backed review corrected canonical contract wording, fixture-evidence scope, and generated agent integrations; rerun native verification without changing product code.",
+      "timestamp": 1783979739,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783974505,
+        "digest": "ed9a8d5b11e970c2896cb4a50aacdd03888dae8b4c9c324a117004b0264b76e9",
+        "note": "Hosted uncovered-path correction verified: all four agent integrations are explicitly covered and installed; strict 100 percent SpecSync, Ruff, and 306 tests pass, with 198 documented sibling-fixture skips and no product changes."
+      },
+      "prior_verification": {
+        "timestamp": 1783974495,
+        "commit": "eb6cc1c64faae33db75602cc3e2098e5db0d7e04",
+        "contract_digest": "9ebe1dc431766a25a23a7085b97919a1bca660a18b0ae3f6bc8846a5fc72f87c",
+        "workspace_digest": "455679f53df5b09b8ba73ff0f29d2961eff69638c9a008b1fcc14feb41462695",
+        "acceptance_input_digest": "afc6a5ae8ad6cf868bd87dacef81127779247b30b7ed570bf6ec95fa13166a6b",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "afc6a5ae8ad6cf868bd87dacef81127779247b30b7ed570bf6ec95fa13166a6b",
+      "current_acceptance_input_digest": "e37f8dcc830c9c208f4346b4622672a4bc6a247af46db28c96ef2f98864f4672"
+    }
+  ]
 }

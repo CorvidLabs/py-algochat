@@ -2,18 +2,20 @@ Create a new spec-sync module spec.
 
 Arguments: $ARGUMENTS
 
-1. Remove `--minimal` if it appears in any position and remember that minimal
-   mode was requested. Classify the complete remaining input before choosing
-   a module name; do not consume its first token yet.
-2. The complete remaining input will be one of:
-   - **A bare module name** — a short identifier like `auth-service` or
-     `billing`, with no whitespace. Use it as-is.
-   - **A free-text feature description** — a sentence or phrase describing
-     what to build, e.g. `"I want a feature that lets users export their
-     data as CSV"`. In this case, invent a short, kebab-case module name that
-     captures the idea (e.g. `csv-export`). If the right name is ambiguous,
-     ask the user to confirm or rename it before continuing. Keep the full
-     description at hand — you'll use it in step 5.
+1. Read the complete arguments above. Remove each standalone `--minimal` flag
+   (in any position) and remember that minimal mode was requested. Preserve
+   the complete remaining input for classification; do not extract a module
+   name yet. If nothing remains, ask the user for a module or description.
+2. Classify the complete remaining input as one of:
+   - **A bare module name** — the entire input is one identifier with no
+     whitespace, such as `auth-service` or `billing`. Use it as-is.
+   - **A free-text feature description** — any quoted or unquoted sentence or
+     phrase describing what to build, e.g. `"I want a feature that lets users
+     export their data as CSV"`. Only after making this classification, invent
+     a short, kebab-case module name that captures the idea (e.g. `csv-export`).
+     Never use only the first word as the module name. If the right name is
+     ambiguous, ask the user to confirm or rename it before continuing. Keep
+     the complete description at hand — you'll use it in step 5.
 3. If minimal mode was requested, run:
    ```
    specsync new <module-name>
@@ -30,6 +32,6 @@ Arguments: $ARGUMENTS
    in the `Purpose`, `Requirements`, and `Public API` sections. If a free-text
    description was given in step 2, use it directly to draft these sections —
    ask clarifying questions if it's underspecified, but do not leave the
-   sections as unfilled boilerplate. Do the same for `requirements.md`
+   sections as unfilled placeholder text. Do the same for `requirements.md`
    (acceptance criteria) and `tasks.md` (initial task breakdown), if present.
 6. Run `specsync check` to confirm the new spec passes validation.

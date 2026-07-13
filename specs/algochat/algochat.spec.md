@@ -1,6 +1,6 @@
 ---
 module: algochat
-version: 4
+version: 5
 status: active
 files:
   - src/algochat/__init__.py
@@ -55,9 +55,9 @@ The `algochat` package exports the existing client, model, cryptographic, envelo
 | `MessageDirection` | Distinguishes sent messages from received messages. |
 | `Message` | Models a chat message, its transaction metadata, direction, status, and reply context. |
 | `Conversation` | Aggregates messages and unread state for two Algorand addresses. |
-| `DiscoveredKey` | Records a discovered encryption key, signature state, address, and source transaction. |
-| `SendOptions` | Configures message sending, reply context, key publication, and confirmation behavior. |
-| `SendResult` | Reports the transaction identifier and confirmed round of a successful send. |
+| `DiscoveredKey` | Stores a discovered X25519 public key and whether its optional Ed25519 signature verified. |
+| `SendOptions` | Configures confirmation and indexer waits, their timeouts, and optional reply context. |
+| `SendResult` | Stores the transaction identifier and resulting sent `Message`. |
 | `PendingStatus` | Represents queued, sending, failed, and sent delivery states. |
 | `PendingMessage` | Stores an offline outgoing message, retry metadata, and current pending status. |
 | `MessageCache` | Defines asynchronous message persistence and lookup operations. |
@@ -92,7 +92,7 @@ The `algochat` package exports the existing client, model, cryptographic, envelo
 | `AccountInfo` | Models an Algorand account balance and related node response data. |
 | `AlgodClient` | Defines asynchronous node operations for parameters, accounts, submission, and confirmation. |
 | `IndexerClient` | Defines asynchronous note-transaction lookup for an Algorand address. |
-| `discover_encryption_key` | Finds and validates the latest published encryption key for an address. |
+| `discover_encryption_key` | Returns the first valid key announcement in indexer result order for an address. |
 | `AlgoChatConfig` | Configures the high-level client, keys, transport clients, caches, and queue. |
 | `AlgoChat` | Coordinates encrypted sending, receiving, discovery, storage, and queued delivery. |
 | `PSK_VERSION` | Defines the PSK envelope version marker as `0x01`. |
@@ -196,3 +196,11 @@ Then the recipient decodes and decrypts the original plaintext and tampering fai
 | 2026-07-13 | CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c: Add complete active Python AlgoChat contract and enforce 100 percent lifecycle coverage |
 | 2026-07-13 | CHG-0003-correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va: Correct the Python AlgoChat lifecycle gate execution order after hosted Trust validation |
 | 2026-07-13 | CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation: Replace generic Python AlgoChat export descriptions with precise implementation-backed contracts |
+| 2026-07-13 | CHG-0007-correct-python-algochat-contract-rows-fixture-evidence-and-free-text-agent-gui: Correct Python AlgoChat contract rows, fixture evidence, and free-text agent guidance |
+
+## Corrected Model and Discovery Contracts
+
+- `DiscoveredKey` stores an X25519 public key and its Ed25519 verification state; it does not store an address or source transaction.
+- `SendOptions` configures confirmation and indexer waits, their timeouts, and optional reply context; it does not publish keys.
+- `SendResult` stores the transaction identifier and resulting sent `Message`; it does not expose a confirmed-round field.
+- `discover_encryption_key` returns the first valid key announcement in indexer result order and does not promise latest-key ordering.

@@ -18,7 +18,10 @@ Standard and PSK envelopes SHALL preserve the established cross-implementation b
 
 Acceptance Criteria
 
-- Envelope vectors round-trip and the cross-implementation test suite accepts the encoded fixtures.
+- Always-run standard and PSK envelope vectors round-trip and preserve their protocol markers.
+- When the separate sibling fixture repository is available, the cross-implementation suite accepts its encoded
+  Swift, TypeScript, Rust, Kotlin, and Python fixtures; absent sibling fixtures are reported as skips and are not
+  counted as required native evidence.
 
 ### REQ-algochat-003
 
