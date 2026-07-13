@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "id": "CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation",
+  "slug": "replace-generic-python-algochat-export-descriptions-with-precise-implementation",
+  "title": "Replace generic Python AlgoChat export descriptions with precise implementation-backed contracts",
+  "description": "Replace generic Python AlgoChat export descriptions with precise implementation-backed contracts",
+  "kind": "documentation",
+  "state": "accepted",
+  "canonical_applied": true,
+  "base_commit": "dc40f6a03c76208502361157b3af0144579bf3bf",
+  "created_at": 1783973465,
+  "updated_at": 1783973586,
+  "affected_specs": [
+    "algochat"
+  ],
+  "affected_paths": [
+    "specs/algochat/algochat.spec.md"
+  ],
+  "no_spec_change": false,
+  "no_spec_change_rationale": null,
+  "acceptance_criteria": [
+    "All 103 detected exports retain exact coverage and each table row states the symbol's actual role or wire constant; descriptions agree with implementation docstrings and constant values; no source or test files change"
+  ],
+  "selected_artifacts": [
+    "context",
+    "docs",
+    "tasks"
+  ],
+  "dependencies": [],
+  "answers": {
+    "architecture_risk": "no",
+    "public_contract": "no"
+  }
+}

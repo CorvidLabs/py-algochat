@@ -1,37 +1,8 @@
----
-module: algochat
-version: 4
-status: active
-files:
-  - src/algochat/__init__.py
-  - src/algochat/blockchain.py
-  - src/algochat/client.py
-  - src/algochat/crypto.py
-  - src/algochat/envelope.py
-  - src/algochat/keys.py
-  - src/algochat/models.py
-  - src/algochat/psk_crypto.py
-  - src/algochat/psk_envelope.py
-  - src/algochat/psk_exchange.py
-  - src/algochat/psk_ratchet.py
-  - src/algochat/psk_state.py
-  - src/algochat/psk_types.py
-  - src/algochat/queue.py
-  - src/algochat/signature.py
-  - src/algochat/storage.py
-  - src/algochat/types.py
+# Precise Python AlgoChat export contracts
 
-db_tables: []
-depends_on: []
----
+## MODIFIED
 
-# Python AlgoChat Protocol
-
-## Purpose
-
-Implement encrypted AlgoChat messaging for Algorand in Python, including interoperable envelopes, X25519 and PSK cryptography, replay-safe ratchet state, blockchain transport abstractions, queues, signatures, and key storage.
-
-## Public API
+### SPEC SECTION Public API
 
 The `algochat` package exports the existing client, model, cryptographic, envelope, PSK, queue, signature, storage, and transport interfaces. These contracts describe the current implementation without changing runtime behavior.
 
@@ -156,43 +127,3 @@ The explicit exception hierarchy keeps protocol, cryptographic, transport, addre
 #### PSK Protocol
 
 The PSK v1.1 surface covers wire constants, hierarchical ratchet derivation, hybrid authenticated encryption, replay-safe receive state, and exchange URI handling.
-
-## Invariants
-
-1. Standard messages use the existing X25519, HKDF-SHA256, and ChaCha20-Poly1305 construction and remain decryptable by the intended recipient and originating sender.
-2. Encoded standard and PSK envelopes preserve the established cross-implementation wire format.
-3. PSK counters derive deterministic per-message keys, reject replays, allow the configured out-of-order window, and prune obsolete receive state.
-4. File key storage encrypts private material at rest and preserves the interoperable salt, nonce, ciphertext, and tag layout; in-memory storage remains test-only.
-5. Blockchain, queue, and client abstractions preserve asynchronous ordering and do not silently discard protocol errors.
-
-## Behavioral Examples
-
-```text
-Given two AlgoChat key pairs and an authenticated plaintext
-When the sender encrypts and encodes an envelope for the recipient
-Then the recipient decodes and decrypts the original plaintext and tampering fails authentication
-```
-
-## Error Cases
-
-| Error | When | Behavior |
-|---|---|---|
-| Invalid envelope | Encoded data has an unsupported marker, length, or field layout | Reject decoding without returning unauthenticated plaintext |
-| Authentication failure | Ciphertext, associated data, key material, or signature is invalid | Raise the existing protocol error |
-| Replay | A PSK receive counter was already processed or is outside the accepted window | Reject the message and preserve valid state |
-| Missing key or message | Storage, queue, or transport lookup cannot resolve the requested item | Return or raise the existing explicit absence result |
-
-## Dependencies
-
-- Python 3.10 or newer
-- `cryptography` for X25519, ChaCha20-Poly1305, HKDF, AES-GCM, and PBKDF2 primitives
-- Algorand-compatible transaction and note transport supplied through the existing abstractions
-
-## Change Log
-
-| Version | Date | Changes |
-|---|---|---|
-| 1 | 2026-07-13 | Initial active contract for the existing Python implementation |
-| 2026-07-13 | CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c: Add complete active Python AlgoChat contract and enforce 100 percent lifecycle coverage |
-| 2026-07-13 | CHG-0003-correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va: Correct the Python AlgoChat lifecycle gate execution order after hosted Trust validation |
-| 2026-07-13 | CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation: Replace generic Python AlgoChat export descriptions with precise implementation-backed contracts |

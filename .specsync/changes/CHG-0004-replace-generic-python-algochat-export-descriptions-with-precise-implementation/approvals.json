@@ -1,0 +1,26 @@
+{
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973547,
+      "digest": "e6e963fb1ac85b6ae01f28a92c9fcf106037458d3e8690d1bf578e72a4063806",
+      "note": "Reviewed all 103 implementation-backed export descriptions against source docstrings, signatures, declared wire constants, and subsystem behavior. The change improves contract precision only and does not alter product code or tests."
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973571,
+      "digest": "ef6093991c4754125210620a91749f5f788b214088e11dd9f51ff52ec70f26cb",
+      "note": "Reviewed the final 103 implementation-backed export descriptions and completed evidence artifacts. Functions, types, errors, and constants are specific to their current implementation; no product code or tests change."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973586,
+      "digest": "a8ae41fe16fe8c16a3c03ea263823373b6bb47ac9ed6dc92bf89fcb542ce7861",
+      "note": "All 103 exports retain exact coverage and now have specific implementation-backed contracts. Native evidence is Ruff clean with 306 tests passed and 198 documented sibling-fixture interoperability skips; no source or test files changed."
+    }
+  ],
+  "reopenings": []
+}

@@ -20,7 +20,112 @@
       "timestamp": 1783972785,
       "digest": "425f20ab6b0ae1b29c3c0c3e6c11f9a046b2a1dee0cb5d6a8f7044ef53e0388a",
       "note": "Python 3.12 native verification passed: Ruff clean, 306 tests passed and 198 documented sibling-fixture cases skipped; strict SpecSync covers 17/17 files, 3226/3226 LOC, and 103/103 exports with complete evidence for five stable requirements."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973341,
+      "digest": "3fc3af349501e7550afc22b5cda3e7d12800003625c2e3d036637f3e4dc91455",
+      "note": "Refreshed native Python 3.12 evidence after CHG-0003: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped. The final contract remains complete at 17/17 files, 3226/3226 LOC, and 103/103 exports; no delta replay was performed."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973619,
+      "digest": "eb9d736cb0688d72b3b202c81f414dd628aebdf74291e05d4b64c0250462b276",
+      "note": "Refreshed the complete contract after CHG-0004: all 103 exports now have precise implementation-backed descriptions; strict coverage remains 17/17 files and 3226/3226 LOC. Ruff is clean, 306 tests pass, and 198 sibling-fixture interoperability cases remain documented skips."
     }
   ],
-  "reopenings": []
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c",
+      "actor": "user:0xLeif",
+      "reason": "CHG-0003 corrected the lifecycle execution order and updated the canonical verification requirement; refresh the accepted 100 percent contract evidence against the final successor state.",
+      "timestamp": 1783973326,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783972785,
+        "digest": "425f20ab6b0ae1b29c3c0c3e6c11f9a046b2a1dee0cb5d6a8f7044ef53e0388a",
+        "note": "Python 3.12 native verification passed: Ruff clean, 306 tests passed and 198 documented sibling-fixture cases skipped; strict SpecSync covers 17/17 files, 3226/3226 LOC, and 103/103 exports with complete evidence for five stable requirements."
+      },
+      "prior_verification": {
+        "timestamp": 1783972780,
+        "commit": "4b8080d1154dec7b1a90956fcc68ef7e45e4ff9f",
+        "contract_digest": "acf2b2f4eec3456baf462ff1c8b7d5be7bea98260db6cf3c5dcdb02e6198cbbb",
+        "workspace_digest": "15244d3d0d57b5e517636b57d67f57dcbaa84a3d2395fcb7827c01bda245f0cc",
+        "acceptance_input_digest": "a4852a8034b13261ac781f215c1634f7ad72f2ed39629b0d998a1c960241a697",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-algochat-001",
+          "REQ-algochat-002",
+          "REQ-algochat-003",
+          "REQ-algochat-004",
+          "REQ-algochat-005"
+        ]
+      },
+      "stale_acceptance_input_digest": "a4852a8034b13261ac781f215c1634f7ad72f2ed39629b0d998a1c960241a697",
+      "current_acceptance_input_digest": "c06457dbc207ba071aa8da94e8f884ccbd52ae18f077bf8c9cd9e308c2ae047a"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c",
+      "actor": "user:0xLeif",
+      "reason": "CHG-0004 replaced generic export boilerplate with precise implementation-backed contracts; refresh the complete 100 percent contract evidence against the final public API section.",
+      "timestamp": 1783973603,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783973341,
+        "digest": "3fc3af349501e7550afc22b5cda3e7d12800003625c2e3d036637f3e4dc91455",
+        "note": "Refreshed native Python 3.12 evidence after CHG-0003: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped. The final contract remains complete at 17/17 files, 3226/3226 LOC, and 103/103 exports; no delta replay was performed."
+      },
+      "prior_verification": {
+        "timestamp": 1783973333,
+        "commit": "dc40f6a03c76208502361157b3af0144579bf3bf",
+        "contract_digest": "acf2b2f4eec3456baf462ff1c8b7d5be7bea98260db6cf3c5dcdb02e6198cbbb",
+        "workspace_digest": "8361a0cc4612df5614cedc873538d2c221e51f071801c1fadfedc63b7573ac12",
+        "acceptance_input_digest": "c06457dbc207ba071aa8da94e8f884ccbd52ae18f077bf8c9cd9e308c2ae047a",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-algochat-001",
+          "REQ-algochat-002",
+          "REQ-algochat-003",
+          "REQ-algochat-004",
+          "REQ-algochat-005"
+        ]
+      },
+      "stale_acceptance_input_digest": "c06457dbc207ba071aa8da94e8f884ccbd52ae18f077bf8c9cd9e308c2ae047a",
+      "current_acceptance_input_digest": "009195b5b6f1f3a32e3ed6b4cbdf0c69ddac10c830ff38be8dd1c6dea0a9d4f7"
+    }
+  ]
 }

@@ -1,0 +1,75 @@
+{
+  "approvals": [
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973248,
+      "digest": "dd8a9f79fe0c8d631bb5bdae9228aa17a2f5c9cafce8bae44bbd8e7b903d12f2",
+      "note": "Reviewed the hosted failure, finite action ordering, native-only Fledge lane, corrected requirement, and complete evidence plan. The migration changes governance orchestration only and leaves product source and tests unchanged."
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973295,
+      "digest": "f045f25227f3484825aeb219d6d669342136642868cff10706585da8f2d3224e",
+      "note": "Reviewed the completed requirement-specific evidence mapping together with the finite action ordering and native-only Fledge lane. No product code or test semantics change."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973313,
+      "digest": "6eb94d2300ed6782c944e966a5ad06d0a27562e3703b56c4f98779d2b2330245",
+      "note": "Native Python 3.12 verification passed: Ruff clean, 306 tests passed, and 198 documented sibling-fixture interoperability cases skipped. Strict SpecSync remains 17/17 files, 3226/3226 LOC, and 103/103 exports; the finite pinned SpecSync-before-Trust ordering is ready for hosted validation."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973643,
+      "digest": "f60860a12db1d3aa12d4ac0c069055f5c3cc2e55ac0b8beec98ef5e04315f023",
+      "note": "Refreshed the finite SpecSync-before-Trust correction against the final precise export contract. Ruff is clean, 306 tests pass, 198 sibling-fixture cases remain documented skips, and strict coverage remains complete with no product changes."
+    }
+  ],
+  "reopenings": [
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0003-correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va",
+      "actor": "user:0xLeif",
+      "reason": "CHG-0004 completed precise export contracts; refresh the lifecycle-order correction against the final canonical specification and workflow inputs.",
+      "timestamp": 1783973624,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783973313,
+        "digest": "6eb94d2300ed6782c944e966a5ad06d0a27562e3703b56c4f98779d2b2330245",
+        "note": "Native Python 3.12 verification passed: Ruff clean, 306 tests passed, and 198 documented sibling-fixture interoperability cases skipped. Strict SpecSync remains 17/17 files, 3226/3226 LOC, and 103/103 exports; the finite pinned SpecSync-before-Trust ordering is ready for hosted validation."
+      },
+      "prior_verification": {
+        "timestamp": 1783973300,
+        "commit": "dc40f6a03c76208502361157b3af0144579bf3bf",
+        "contract_digest": "f045f25227f3484825aeb219d6d669342136642868cff10706585da8f2d3224e",
+        "workspace_digest": "c1da902f519373c208549ff35d54a2420dbfec98257e91b37d263126b4d5fd34",
+        "acceptance_input_digest": "c4a3917466cb94caaeb633fc31c903b4ca8b8130c3b405a2644366e5a53b58bc",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-algochat-005"
+        ]
+      },
+      "stale_acceptance_input_digest": "c4a3917466cb94caaeb633fc31c903b4ca8b8130c3b405a2644366e5a53b58bc",
+      "current_acceptance_input_digest": "fe3867c1520e63c7ea7a291427180d0490ad2083fdeb2874df25bbbb3b571adc"
+    }
+  ]
+}

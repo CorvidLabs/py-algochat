@@ -20,6 +20,13 @@
       "timestamp": 1783972821,
       "digest": "664e3018c52e3df29111ad6ef594777a17745d1f0aaffb08dd370a839dc42550",
       "note": "Final refresh after the accepted 100% canonical successor: Ruff clean, 306 tests passed and 198 documented sibling-fixture cases skipped on the final delivery; no product code changes."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783973365,
+      "digest": "d4c98c46733337f3eee19898bf8fee8670642c541b903b93b55d2c05a9a1ec4a",
+      "note": "Final refresh after the accepted complete contract and lifecycle-order correction: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped. Strict SpecSync now enforces 100 percent coverage; the original threshold-zero record is preserved only as historical migration evidence."
     }
   ],
   "reopenings": [
@@ -61,6 +68,45 @@
       },
       "stale_acceptance_input_digest": "850a071388e8f2d329637d4c93cea760f4650096b03f692f6d3576873f19454a",
       "current_acceptance_input_digest": "7774f1fc710120434ade48dd569e69fa3b5fcc34cd6a70bcbf566eed533349bc"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-python-algochat-implemen",
+      "actor": "user:0xLeif",
+      "reason": "The complete contract and lifecycle-order successor changes are now accepted; refresh the original migration evidence last against the final governance inputs.",
+      "timestamp": 1783973347,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783972821,
+        "digest": "664e3018c52e3df29111ad6ef594777a17745d1f0aaffb08dd370a839dc42550",
+        "note": "Final refresh after the accepted 100% canonical successor: Ruff clean, 306 tests passed and 198 documented sibling-fixture cases skipped on the final delivery; no product code changes."
+      },
+      "prior_verification": {
+        "timestamp": 1783972813,
+        "commit": "99f2cde55f9eaf80e4b0c064e98bb42b81b4a722",
+        "contract_digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
+        "workspace_digest": "3e29e57cfaa167d6f07de95a92ee5989a12574bab52f4b14b35e71477abf73a0",
+        "acceptance_input_digest": "57ff05e819c43012834c085d12ea241d0e6fc3a89b484b1f6e57a6abf8afd3f7",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "57ff05e819c43012834c085d12ea241d0e6fc3a89b484b1f6e57a6abf8afd3f7",
+      "current_acceptance_input_digest": "d305850de1be11388fd106fb4b8ac27662a37a16a981b27a458ccf9770700e4e"
     }
   ]
 }

@@ -2,7 +2,7 @@ schema_version = 1
 profile = "standard"
 
 [lifecycle]
-command = ["specsync", "change", "check", "--strict", "--require-coverage", "100"]
+command = ["fledge", "lanes", "run", "verify"]
 
 [contract]
 enabled = true
