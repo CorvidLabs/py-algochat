@@ -5,7 +5,12 @@
   "meaningful_paths": [
     "src/",
     "tests/",
+    "specs/",
     "site/",
+    ".claude/",
+    ".codex/",
+    ".cursor/",
+    ".gemini/",
     ".github/",
     "Cargo.toml",
     "Cargo.lock",

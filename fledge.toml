@@ -1,14 +1,16 @@
 [tasks]
 test = "python3 -m pytest tests/"
 lint = "ruff check src/ tests/"
-install = "pip install -e .[dev]"
+install = "pip install -e .[dev] ruff"
 
 [lanes.verify]
 description = "Run the Python AlgoChat protocol tests and lint checks"
 steps = ["lint", "test"]
 
 [lanes.ci]
+description = "Run Python AlgoChat lint and protocol tests in CI"
 steps = ["lint", "test"]
 
 [lanes.pre-commit]
+description = "Run Python AlgoChat lint and protocol tests before committing"
 steps = ["lint", "test"]

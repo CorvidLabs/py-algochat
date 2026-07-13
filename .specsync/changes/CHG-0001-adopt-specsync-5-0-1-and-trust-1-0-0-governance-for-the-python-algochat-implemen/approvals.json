@@ -27,6 +27,13 @@
       "timestamp": 1783973365,
       "digest": "d4c98c46733337f3eee19898bf8fee8670642c541b903b93b55d2c05a9a1ec4a",
       "note": "Final refresh after the accepted complete contract and lifecycle-order correction: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped. Strict SpecSync now enforces 100 percent coverage; the original threshold-zero record is preserved only as historical migration evidence."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783974002,
+      "digest": "535e21e869ab80e8bc71732b593412cec7dd4ca6da18430ded98dae9e0919c7b",
+      "note": "Final adoption refresh after all review corrections: strict Fledge configuration and clean Ruff bootstrap pass; strict SpecSync remains 100 percent; 306 tests pass and 198 sibling-fixture cases remain documented skips. Historical threshold-zero text is superseded by the accepted full-contract successors."
     }
   ],
   "reopenings": [
@@ -107,6 +114,45 @@
       },
       "stale_acceptance_input_digest": "57ff05e819c43012834c085d12ea241d0e6fc3a89b484b1f6e57a6abf8afd3f7",
       "current_acceptance_input_digest": "d305850de1be11388fd106fb4b8ac27662a37a16a981b27a458ccf9770700e4e"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-python-algochat-implemen",
+      "actor": "user:0xLeif",
+      "reason": "CHG-0005 finalized migration configuration and CHG-0002 evidence is refreshed; update the original adoption evidence last against the final delivery.",
+      "timestamp": 1783973975,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783973365,
+        "digest": "d4c98c46733337f3eee19898bf8fee8670642c541b903b93b55d2c05a9a1ec4a",
+        "note": "Final refresh after the accepted complete contract and lifecycle-order correction: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped. Strict SpecSync now enforces 100 percent coverage; the original threshold-zero record is preserved only as historical migration evidence."
+      },
+      "prior_verification": {
+        "timestamp": 1783973355,
+        "commit": "dc40f6a03c76208502361157b3af0144579bf3bf",
+        "contract_digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
+        "workspace_digest": "8361a0cc4612df5614cedc873538d2c221e51f071801c1fadfedc63b7573ac12",
+        "acceptance_input_digest": "d305850de1be11388fd106fb4b8ac27662a37a16a981b27a458ccf9770700e4e",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "d305850de1be11388fd106fb4b8ac27662a37a16a981b27a458ccf9770700e4e",
+      "current_acceptance_input_digest": "435bdb3b28c2381f64c1159268bb43123a79394e3bca70a7b7815f6f3e53f21f"
     }
   ]
 }
