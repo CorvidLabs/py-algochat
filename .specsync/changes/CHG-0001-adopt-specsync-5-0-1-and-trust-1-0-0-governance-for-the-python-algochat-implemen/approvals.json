@@ -6,6 +6,13 @@
       "timestamp": 1783958399,
       "digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
       "note": "Definition approval after review of truthful completed preparation/configuration tasks and previously completed native verification; hosted CI and closing approval remain later gates."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1783959093,
+      "digest": "66aa587564becac7ba65db6d3e087b0f5d64446d5cac3e43a1795f2b3d5b2ad4",
+      "note": "Closing approval after committed-head Python 3.12 verification passed: Ruff clean, 306 tests passed, and 198 documented sibling-fixture cases skipped; hosted 3.10-3.12 remains independent."
     }
   ]
 }
