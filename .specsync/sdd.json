@@ -35,8 +35,7 @@
   ],
   "ignored_paths": [],
   "verification_commands": [
-    "python3 -m pytest tests/",
-    "ruff check src/ tests/"
+    "fledge lanes run verify"
   ],
   "custom_artifacts": {},
   "principles_file": null

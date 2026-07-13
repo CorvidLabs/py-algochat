@@ -1,7 +1,7 @@
 {
-  "timestamp": 1783972640,
+  "timestamp": 1783972657,
   "commit": "3cfefc710c3da3b0cea5e810ceaa228955080d11",
-  "contract_digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
+  "contract_digest": "10aa6b569afc8f86dfa09c3b5d03efb72a9f17f3fdeb7c5bd4b87b1a54482e32",
   "workspace_digest": "794a7a4e74f956d8539680c0b7715b5bbd0c5888eec4751203c9e2ea68c670c9",
   "passed": true,
   "commands": [
@@ -16,5 +16,11 @@
       "exit_code": 0
     }
   ],
-  "requirement_ids": []
+  "requirement_ids": [
+    "REQ-algochat-001",
+    "REQ-algochat-002",
+    "REQ-algochat-003",
+    "REQ-algochat-004",
+    "REQ-algochat-005"
+  ]
 }

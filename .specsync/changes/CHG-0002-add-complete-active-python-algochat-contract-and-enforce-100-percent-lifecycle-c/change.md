@@ -1,6 +1,6 @@
 ---
 id: CHG-0002-add-complete-active-python-algochat-contract-and-enforce-100-percent-lifecycle-c
-state: implementing
+state: verifying
 type: migration
 base_commit: 3a2d5a2717013561e2efb6703c1ae6fddd984a64
 ---
