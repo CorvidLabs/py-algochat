@@ -55,6 +55,13 @@
       "timestamp": 1783980103,
       "digest": "170dec1b0fb12ded4d0ccc1ed4cb5ece809fbcc296f40ca8d48ad725408b2f25",
       "note": "Reaccepted after the non-semantic trailing-whitespace correction and fresh Ruff plus deterministic Pytest verification."
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784416784,
+      "digest": "d95c3ca797eea342404149de55181dddb454ecf02fe7afc473a74524c5c1fa84",
+      "note": "Re-acceptance with the Trust 1.1.1 and SpecSync 5.1.1 pins; canonical deltas were already integrated and were not replayed."
     }
   ],
   "reopenings": [
@@ -262,6 +269,47 @@
       },
       "stale_acceptance_input_digest": "1ce4c073caf0094cf84420107d935162d880531c6f4d6b77c657d949fa624adb",
       "current_acceptance_input_digest": "4a8d93f2ba80fc24498c2cf655e777656439e3b88be8e4c79b03adb4a02a14f3"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0003-correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va",
+      "actor": "user:0xLeif",
+      "reason": "Trust 1.1.1 and SpecSync 5.1.1 pins changed governed delivery inputs; accepted verification is stale.",
+      "timestamp": 1784416757,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783980103,
+        "digest": "170dec1b0fb12ded4d0ccc1ed4cb5ece809fbcc296f40ca8d48ad725408b2f25",
+        "note": "Reaccepted after the non-semantic trailing-whitespace correction and fresh Ruff plus deterministic Pytest verification."
+      },
+      "prior_verification": {
+        "timestamp": 1783980103,
+        "commit": "7949c9bbadac618e0ec1108e2055402a4c17b10e",
+        "contract_digest": "f045f25227f3484825aeb219d6d669342136642868cff10706585da8f2d3224e",
+        "workspace_digest": "eb8ff3cc4f70c0a406996a526f599692abc019a8ef0593ed888571ebbd0a7d9f",
+        "acceptance_input_digest": "4a8d93f2ba80fc24498c2cf655e777656439e3b88be8e4c79b03adb4a02a14f3",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": [
+          "REQ-algochat-005"
+        ]
+      },
+      "stale_acceptance_input_digest": "4a8d93f2ba80fc24498c2cf655e777656439e3b88be8e4c79b03adb4a02a14f3",
+      "current_acceptance_input_digest": "c80ed76859003831c2cb3ae21fcc715a8a003ec8521309c85497e0cddd3d1aca"
     }
   ]
 }

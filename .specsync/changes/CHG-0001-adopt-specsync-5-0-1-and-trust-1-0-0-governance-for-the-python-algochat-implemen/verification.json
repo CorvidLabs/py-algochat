@@ -1,9 +1,464 @@
 {
-  "timestamp": 1783973990,
-  "commit": "8fb14093995cb99c480e875a00a150bac8b38b36",
-  "contract_digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
-  "workspace_digest": "455679f53df5b09b8ba73ff0f29d2961eff69638c9a008b1fcc14feb41462695",
-  "acceptance_input_digest": "435bdb3b28c2381f64c1159268bb43123a79394e3bca70a7b7815f6f3e53f21f",
+  "timestamp": 1784416712,
+  "commit": "176a7d230ff6ebe80441532c3018d61a005658ef",
+  "contract_digest": "2abc0b1d03d8e8c873dfb7730df6479981f83503e26e54193f51fb8ec470ac58",
+  "workspace_digest": "1b2a97e83197cb250be21357632c3a3a81d53ee9fa82266e3029ffc1a3aaa6b5",
+  "acceptance_input_digest": "93d58c2102f35fca7b508c10c2e44aec88c4b3e1baca3e07d269fd3a280bc9a8",
+  "acceptance_manifest": {
+    "schema_version": 1,
+    "entries": [
+      {
+        "path": ".attest.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "2581fe52873327db0bbac357a5102a0dbb18a1eea5a690b7b75eaa571e50cf65",
+        "entry_digest": "2904a18e18582f191a1d359d16e7bc61a7596ac77f62e55a94de56b3da8c796e",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".augur.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "17f6ad5b84b4db012f0e3f398a96a478c1324fd47e72e1dd2a13c7cf9a432983",
+        "entry_digest": "bac13c952da05292bdd0af5849aad9d9def3ae5afc830fa42b6914b2fd874beb",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/ci.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "7b900492484e148ca05c45ee119552c4911c439c1c84d6c127d0ae60c2b2c79e",
+        "entry_digest": "731c08b99428acfc15c37e43f4736322bb517c64671d50e7b48d5364cc42d6da",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/publish.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "b6c2d61c8c4abb3f599472ad8edf3f3816973644c36156a4acc0b47f2a686ca1",
+        "entry_digest": "941d9e43a338f7cdd8c932fb90744eccbc67afc3c137c1303d382507265a7f4d",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".github/workflows/trust.yml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "5d1d7fef618d1d0f89cef7c7d75940167005feb9b13d0fd3176b7cf8c0351555",
+        "entry_digest": "15165d31accff762ee4d731225495f06df3cea9e45fdc4b123c54d94917e4813",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/.gitignore",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "a505253bd2fdfb84f8121e89e48bbc67144082b5a88f439ee6acfb45424799b0",
+        "entry_digest": "ec3b8bd021ac6ac36ddfba3d0d6b84535be8074b917e9bffa050216e422d1792",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/adoption-report.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "ba2ed2afc3ae30f876c8526b2852980c45513cb2ad9778a38449554a703132e5",
+        "entry_digest": "e3d1a72f7df64783b32365de961590baa00e6548ef6b12523ee049d6651d17d1",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/config.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "eb3a246bf1056b7e0ad091d549819f5c408e659ed97f52f0220467c410629001",
+        "entry_digest": "bec976a92835bb4b682ab72811fc4c69fe922b06f8aca9f9f1b4f6e4c70cd635",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/registry.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "5c1b185780e5937c743b1c9937a008f56727453cc481a3cc5880f4ee504ccc88",
+        "entry_digest": "b9681964fed31f75a44ed70fd6d7235666910d7087ab9f1e22d7b378a87de3f8",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/sdd.json",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "095edc0b6845de5365761d0dcd1d0e09a6973f3216b6c0979e769cb558acbcfd",
+        "entry_digest": "aaa22838aa9d76d3e1b93f2020f8d2a0f6567de3a7dd91ac92318097dbbb51ca",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".specsync/version",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "23b6867924dfeb9cf532753438dc919669bf93ad88215e11c15630a4acbf4299",
+        "entry_digest": "339b5f88be30302336707baa5dab61fd4b324d04e495d3bb772cf893fb4f73bc",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": ".trust.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "9fc066e4d2da48cdeab63770134c5cf56fcf909f77e20451af67ff0c6d0cc6fe",
+        "entry_digest": "3682af563d5f80eb4c816f406d52920564a52cd1bc360d16626bd2dfe373deac",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "AGENTS.md",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "10e905023b08cf9dda2c103f28d40ffc8bb3af51fa2e04100ae5ec735605c1ee",
+        "entry_digest": "2a72f1c7bc1f74f9720ed6e8d417f41f182893ba0068eba830430e1dab380ea2",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "fledge.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "0050b363d0caa8ab6cddc4011877d854f1367aa9950ef42e46c49057024baf89",
+        "entry_digest": "f5e3ae8c2b688a85d8bede5a9b17f63a38b251c8a0932dd31f42b4d9bb71cbf8",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "pyproject.toml",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "be175ea23364f5eba7ada1f01af3aa305149b525bb136a9e02051f3fdb4ebda6",
+        "entry_digest": "d635bd48ca57c74bee64d81f13884c991038c73cab6e2c4c8cb8c0291a334bd3",
+        "owners": [
+          "@exact:delivery"
+        ]
+      },
+      {
+        "path": "src/algochat/__init__.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "5120be6b1f35eb231c7d082d1efe8bf4dbe799327aa1229d745dc5aaf7afe554",
+        "entry_digest": "61c9d6d019d5cfb5a88bc963c68185800e00a645d3605b1f5ab3fa74ee401689",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/blockchain.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "09143eb73dc4b4cda3b60dd6325357d8b5b29c82ee17c326d8692c507d7ae71f",
+        "entry_digest": "6d545f2a650aeaa0dfb54f3b4e2bae4ec86aab4c267bc1fe5eacfcc9f313ea6a",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/client.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "56c07007b076cc0b442861857afc11c52e183d876b01d4400f16d376e2203031",
+        "entry_digest": "c5b8d0663b7ecb2a236305110a041e9d73cc1ea0c705a51b2a2b72b7a65f073c",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/crypto.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "44c6e3dec5b32814fbee9af9c2f03a97a64154b6ab3a1cc614bbe8734ca286d5",
+        "entry_digest": "c296f67cb0524e8c9493a249f895546de7ce8179e8387eeae54e1b4c283f7362",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/envelope.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "7b35db2157f6a167928d452af08e42ed8d0c49e61befb1ac6b2874b675b2082d",
+        "entry_digest": "58b60556438d8e257ac5e69dd238e86a02945c4c50985fc052294b8dbb799c1f",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/keys.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "6910ff7e7dbcf2f2050353574343fa8d3c852057af269cc9aea1356f11858958",
+        "entry_digest": "46bfa89dbbd56e974978ba8ad5454c96f5c8744e9dce27790a19dc0d8ab910a0",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/models.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "d39ed2db78fd59c5030c07957996c1f7d6f6f68a66f20152d7c953ad44bf7d6f",
+        "entry_digest": "6789d34d61dc301e0b0eee79b077f0417304bcb0f0d808c4f7d3350110d83994",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/psk_crypto.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "663ffbac6acdb46b93cade82530bd0ba034695b9f8b6eb18b487e9c9bd7eadc3",
+        "entry_digest": "133ea45449556db6f7bbe9d6ceda9d0f7fd9faedca1da082eec7107a63aa3eab",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/psk_envelope.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "90d04e403f52f752411d6d517e329c8cd77d9fa8205225e52476e2db74a6681a",
+        "entry_digest": "0e5e82b986e601758bc8f9b08a590e7f4565a5c1c995bbf6ae01783ea780e8ee",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/psk_exchange.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "335e24512f45b9cd2b39e5a02ee90997207e9a4c697244eb4f8b4af8c66894e9",
+        "entry_digest": "883b18c06f57806fa549bd9f217e71f7660fb1550e963a96ad2d53b9f3b171f9",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/psk_ratchet.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "a8ae0ed8451c3f9edf0c0e4ee9146e4af9809e61e61c59174ea3e1d7f36889f0",
+        "entry_digest": "60a9bd822c0d4f5a341eda284356554652e73b6228d01b2bef8628726979f774",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/psk_state.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "776a269eea68165fa12a8d7a4992c5311cdebf0295e1f166eb387e644e41d0d5",
+        "entry_digest": "bffad60b2c5ae21be6d185d0f4c3b1a263eb8f275de7cfb0839e786b50464b1a",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/psk_types.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "f017e5395579e4eef1c7dba847bf07736f0ee83b08c6b5243e5b951a35dd5b4e",
+        "entry_digest": "bd7a81a090647a2758512d8de8de6824c02ecff90b8f21e5660997732a791810",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/queue.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "456c1268522a447f32f4b1004ec1c77450d3e5fc455794bbe9aeb47b0506ae5f",
+        "entry_digest": "fe20bbebd4cf441a73d40b20ad00e375d879f4eb362bafd6c8d56790a8c4fe6c",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/signature.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "bfe38325141839c5a8ac8445b93e4666078eda80678f2051e465167908eb4662",
+        "entry_digest": "1071d1f525d27e90e4b4e3717df9f9e433c79c28418e72929f4d19e6406d7639",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/storage.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "61dcd90fcddc5f6f295110d0fcd9df419bd023d17db3326199aaff462e2ba42c",
+        "entry_digest": "1e9a3904d0bdb9703f124d3f3ba5d5119dd10b6697781f3d87acaabe4e3b1921",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "src/algochat/types.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "b88abb7798743122c4c0103f74afe7055ef2180014d25caf2a3064b33fbdddd4",
+        "entry_digest": "84c2b7a14b3690dcaaf7cb4f87d9ed20a852fc953e21767dc126373654a35a95",
+        "owners": [
+          "algochat"
+        ]
+      },
+      {
+        "path": "tests/__init__.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "004968428129131e40bab5eb310d40a2084c52a2cf47086c7fdb085f753324f9",
+        "entry_digest": "e325f8250103c2c781cb5c25a37fbb0bc12459a3d590dc8f6900ccc533dd5770",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/export_envelopes.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "d60eb073c385b6eb0596519f3396e7d3920b38e6e6be418850b3838625681be2",
+        "entry_digest": "0e7380cbfc23a209bdbabea414955e43325d9454c695b719a98b9f8c465b5850",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_blockchain.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "58ede5ae810d21a7adf5cf562f02ee876487956a5d01bdfb1208bdc199abf887",
+        "entry_digest": "3625d24493f4c519c40b04c2f7f21f8d59326dea2156a9e49233f02e11d73e04",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_client.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "177d7f00f45d081d708e01834b5322410e40599116b77c8252b80abe911a747a",
+        "entry_digest": "336be7ea5ccb4f54e446e435c50dd83b4631f819e08084c351b7b84a3e4f111f",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_cross_impl.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "63b47c190cdec3c80cd4741a82597729a5f3513348cd9787db696d31f80109ad",
+        "entry_digest": "47dcd1e913ed6946ccb6a59cdd6a77757e3898abf2bc4f8cc95bb97afe5ac533",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_crypto.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "126563049128d10c1d1f9c3df822b00ef13fb27cedf726cf9ee389f8272ed68c",
+        "entry_digest": "8335d8b207a9f203b4672f475f3a1763f618649af178912513ca205bd4f1bfb7",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_keys.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "45634052346b6b46b035006f7839db361f01d140d730049329897e8979b99012",
+        "entry_digest": "7ae4738dfee83feae8bd2743a36c9fc6472e8347350d8935f08d8e8aab560e76",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_models.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "dbdfec58f51b9bf0783ed9ae7e91189375c2a0d420092824ae7869cffdda471d",
+        "entry_digest": "77117c693fd21b7e6013fa3624dd996ac9df4a53c6033ec888106593a81d2666",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_psk.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "e2c9275f245923013f0598f40be826aca15ae39b32b9c917cefdc81056a52cd9",
+        "entry_digest": "a9ef62d8a55a0c3b61846ef113b88fba87c6bac3b396cf56588c743a1525f56a",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_queue.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "52cfe569e4e71bebe577269372af8a77e096ee8b6116d96af0334f181ad185e1",
+        "entry_digest": "22ba201f8c05ec8ca5cac23d96cc8922413628af601ba1956fbb38c9ca19921d",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_signature.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "e164c8d598ecbb72ff32659a4179215022098ab8f94b6208d435a16e231ce204",
+        "entry_digest": "5b92150e847bb3e7c80015edb1c68f44887838f549cf4f6043fff97ff264fad9",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_storage.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "5fcc858be7c0eb140a858b2bbbacf2d642cc1e3d03647c1bcafb028be2a45452",
+        "entry_digest": "ae40d1836e18b16ce0ddf8764973cb64a117c67982d84faa8454d5e13030dfc3",
+        "owners": [
+          "@exact:test"
+        ]
+      },
+      {
+        "path": "tests/test_vectors.py",
+        "kind": "file",
+        "mode": 33188,
+        "payload_digest": "4dc1e1a8c6eaaca2c38aaebb59316bab84f79794e38c7e46eb9258958cefa548",
+        "entry_digest": "6a0d8fdffa6a31c9b22fc9b75dea0dc72dbf5bdf9431ec1130f4c9d1740987f1",
+        "owners": [
+          "@exact:test"
+        ]
+      }
+    ]
+  },
   "passed": true,
   "commands": [
     {

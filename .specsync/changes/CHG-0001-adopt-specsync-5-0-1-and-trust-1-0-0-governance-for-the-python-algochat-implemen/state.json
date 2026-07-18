@@ -9,7 +9,7 @@
   "canonical_applied": true,
   "base_commit": "d4c523fe51f26b7fee57bc11ddbc3cbe7547d15a",
   "created_at": 1783884699,
-  "updated_at": 1783974002,
+  "updated_at": 1784416739,
   "affected_specs": [],
   "affected_paths": [
     "src/",
@@ -38,6 +38,161 @@
     "docs"
   ],
   "dependencies": [],
+  "acceptance_owner_corrections": [
+    {
+      "schema_version": 1,
+      "sequence": 1,
+      "path": "src/algochat/__init__.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416408
+    },
+    {
+      "schema_version": 1,
+      "sequence": 2,
+      "path": "src/algochat/blockchain.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416574
+    },
+    {
+      "schema_version": 1,
+      "sequence": 3,
+      "path": "src/algochat/client.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416576
+    },
+    {
+      "schema_version": 1,
+      "sequence": 4,
+      "path": "src/algochat/crypto.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416579
+    },
+    {
+      "schema_version": 1,
+      "sequence": 5,
+      "path": "src/algochat/envelope.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416582
+    },
+    {
+      "schema_version": 1,
+      "sequence": 6,
+      "path": "src/algochat/keys.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416585
+    },
+    {
+      "schema_version": 1,
+      "sequence": 7,
+      "path": "src/algochat/models.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416589
+    },
+    {
+      "schema_version": 1,
+      "sequence": 8,
+      "path": "src/algochat/psk_crypto.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416593
+    },
+    {
+      "schema_version": 1,
+      "sequence": 9,
+      "path": "src/algochat/psk_envelope.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416598
+    },
+    {
+      "schema_version": 1,
+      "sequence": 10,
+      "path": "src/algochat/psk_exchange.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416604
+    },
+    {
+      "schema_version": 1,
+      "sequence": 11,
+      "path": "src/algochat/psk_ratchet.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416610
+    },
+    {
+      "schema_version": 1,
+      "sequence": 12,
+      "path": "src/algochat/psk_state.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416616
+    },
+    {
+      "schema_version": 1,
+      "sequence": 13,
+      "path": "src/algochat/psk_types.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416623
+    },
+    {
+      "schema_version": 1,
+      "sequence": 14,
+      "path": "src/algochat/queue.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416630
+    },
+    {
+      "schema_version": 1,
+      "sequence": 15,
+      "path": "src/algochat/signature.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416639
+    },
+    {
+      "schema_version": 1,
+      "sequence": 16,
+      "path": "src/algochat/storage.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416647
+    },
+    {
+      "schema_version": 1,
+      "sequence": 17,
+      "path": "src/algochat/types.py",
+      "module": "algochat",
+      "actor": "user:0xLeif",
+      "reason": "The historical definition omitted the canonical owner of the already-scoped package input.",
+      "timestamp": 1784416656
+    }
+  ],
   "answers": {
     "architecture_risk": "yes",
     "public_contract": "no"
