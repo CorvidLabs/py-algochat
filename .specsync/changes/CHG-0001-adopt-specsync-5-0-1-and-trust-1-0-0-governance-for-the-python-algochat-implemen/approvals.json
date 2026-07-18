@@ -34,6 +34,27 @@
       "timestamp": 1783974002,
       "digest": "535e21e869ab80e8bc71732b593412cec7dd4ca6da18430ded98dae9e0919c7b",
       "note": "Final adoption refresh after all review corrections: strict Fledge configuration and clean Ruff bootstrap pass; strict SpecSync remains 100 percent; 306 tests pass and 198 sibling-fixture cases remain documented skips. Historical threshold-zero text is superseded by the accepted full-contract successors."
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784416419,
+      "digest": "c7eecd3d68d807151c8b138409f4ed197e3f0c44ffb2b28b71117bfef0497c4f",
+      "note": null
+    },
+    {
+      "gate": "definition",
+      "actor": "user:0xLeif",
+      "timestamp": 1784416692,
+      "digest": "2abc0b1d03d8e8c873dfb7730df6479981f83503e26e54193f51fb8ec470ac58",
+      "note": null
+    },
+    {
+      "gate": "acceptance",
+      "actor": "user:0xLeif",
+      "timestamp": 1784416739,
+      "digest": "becb0d98295a8ef9081785d3d30378fe22ddf25b0015b8d196ac7207cdf43286",
+      "note": "Re-acceptance with canonical ownership correction for src/algochat/__init__.py; canonical deltas were already integrated and were not replayed."
     }
   ],
   "reopenings": [
@@ -153,6 +174,45 @@
       },
       "stale_acceptance_input_digest": "d305850de1be11388fd106fb4b8ac27662a37a16a981b27a458ccf9770700e4e",
       "current_acceptance_input_digest": "435bdb3b28c2381f64c1159268bb43123a79394e3bca70a7b7815f6f3e53f21f"
+    },
+    {
+      "schema_version": 1,
+      "change_id": "CHG-0001-adopt-specsync-5-0-1-and-trust-1-0-0-governance-for-the-python-algochat-implemen",
+      "actor": "user:0xLeif",
+      "reason": "Trust 1.1.1 and SpecSync 5.1.1 pins changed governed delivery inputs; accepted verification is stale.",
+      "timestamp": 1784415702,
+      "from_state": "accepted",
+      "to_state": "verifying",
+      "superseded_approval": {
+        "gate": "acceptance",
+        "actor": "user:0xLeif",
+        "timestamp": 1783974002,
+        "digest": "535e21e869ab80e8bc71732b593412cec7dd4ca6da18430ded98dae9e0919c7b",
+        "note": "Final adoption refresh after all review corrections: strict Fledge configuration and clean Ruff bootstrap pass; strict SpecSync remains 100 percent; 306 tests pass and 198 sibling-fixture cases remain documented skips. Historical threshold-zero text is superseded by the accepted full-contract successors."
+      },
+      "prior_verification": {
+        "timestamp": 1783973990,
+        "commit": "8fb14093995cb99c480e875a00a150bac8b38b36",
+        "contract_digest": "11b9d307d5f4e305b25634af2f5ccb969f48e604ac5817d3deb142556893c28a",
+        "workspace_digest": "455679f53df5b09b8ba73ff0f29d2961eff69638c9a008b1fcc14feb41462695",
+        "acceptance_input_digest": "435bdb3b28c2381f64c1159268bb43123a79394e3bca70a7b7815f6f3e53f21f",
+        "passed": true,
+        "commands": [
+          {
+            "command": "python3 -m pytest tests/",
+            "success": true,
+            "exit_code": 0
+          },
+          {
+            "command": "ruff check src/ tests/",
+            "success": true,
+            "exit_code": 0
+          }
+        ],
+        "requirement_ids": []
+      },
+      "stale_acceptance_input_digest": "435bdb3b28c2381f64c1159268bb43123a79394e3bca70a7b7815f6f3e53f21f",
+      "current_acceptance_input_digest": "b2ef6053a8b556b152c4eb2227cde93b89251ea07edf15e94b6506b80acc7e53"
     }
   ]
 }
