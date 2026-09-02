@@ -25,7 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]" ruff
       - name: SpecSync lifecycle gate
-        uses: CorvidLabs/spec-sync@a89d827e93fa0bc9e6168447e66a0ad30fa92e65 # v5.1.1
+        uses: CorvidLabs/spec-sync@29392630a590c13fcca65bec2a3c0a8f8c9e4081 # v6.0.0-rc.12
         with:
           version: "5.1.1"
           root: .
@@ -34,4 +34,4 @@ jobs:
           lifecycle-enforce: "true"
       - name: CorvidLabs Trust gate
         id: trust
-        uses: CorvidLabs/trust@a239f78658e5ad0f12fa230f494890e40c6e4d7b # v1.1.1
+        uses: CorvidLabs/trust@e0272543ad5c88ec75cea1e606cc2efa552af25b # v1.2.0-rc.4
