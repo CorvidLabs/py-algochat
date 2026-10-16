@@ -10,6 +10,9 @@ from .envelope import encode_envelope, decode_envelope, is_chat_message, ChatEnv
 from .types import (
     DecryptedContent,
     MINIMUM_PAYMENT,
+    MAX_NOTE_SIZE,
+    MAX_PAYLOAD_SIZE,
+    payment_fee,
     AlgoChatError,
     InvalidPublicKeyError,
     KeyDerivationError,
@@ -112,7 +115,7 @@ from .psk_crypto import (
     decrypt_psk_message,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     # Keys
@@ -170,6 +173,9 @@ __all__ = [
     "MessageNotFoundError",
     # Constants
     "MINIMUM_PAYMENT",
+    "MAX_NOTE_SIZE",
+    "MAX_PAYLOAD_SIZE",
+    "payment_fee",
     # Queue
     "QueueConfig",
     "SendQueue",

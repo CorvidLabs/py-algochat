@@ -47,3 +47,12 @@ Acceptance Criteria
 
 - The Fledge verification lane passes Ruff and Pytest without external credentials, and the pinned SpecSync 5.0.1 action passes strict lifecycle validation at 100% coverage before Trust runs.
 
+### REQ-algochat-006
+
+AlgoChat notes SHALL be at most 4096 bytes. A standard plaintext of 3954 bytes and a PSK plaintext of 3950 bytes SHALL encode to exactly 4096 bytes. Plaintexts of 882 and 878 bytes SHALL still encrypt, and those notes SHALL be at most 1024 bytes. One byte past either maximum SHALL fail before a transaction is built. A note payment fee at a minimum fee of 1000 microAlgos SHALL be 1000, 1098, and 1308 for notes of 1024, 2000, and 4096 bytes.
+
+Acceptance Criteria
+
+- Standard and PSK size tests accept 882 and 878 byte plaintexts, encode the new maxima to exactly 4096 bytes, and reject one extra byte before encoding.
+- Fee tests at minimum fee 1000 expect 1000, 1098, and 1308 microAlgos for notes of 1024, 2000, and 4096 bytes.
+

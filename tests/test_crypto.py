@@ -4,7 +4,14 @@ import pytest
 from algochat.keys import derive_keys_from_seed, public_key_to_bytes
 from algochat.crypto import encrypt_message, decrypt_message
 from algochat.envelope import encode_envelope, decode_envelope, is_chat_message
-from algochat.types import HEADER_SIZE
+from algochat.types import (
+    HEADER_SIZE,
+    TAG_SIZE,
+    MAX_NOTE_SIZE,
+    MAX_PAYLOAD_SIZE,
+    EncryptionError,
+    payment_fee,
+)
 from .test_vectors import (
     ALICE_SEED_HEX,
     BOB_SEED_HEX,
@@ -210,3 +217,73 @@ class TestMultiMessageEncryption:
 
         assert result is not None, f"Failed to decrypt encoded {message_key}"
         assert result.text == message, f"Encoded message mismatch for {message_key}"
+
+
+class TestNoteCapacity:
+    """Note ceiling is 4096 bytes. Headers and the tag are unchanged."""
+
+    @pytest.fixture
+    def alice_keys(self):
+        """Alice's key pair."""
+        seed = bytes.fromhex(ALICE_SEED_HEX)
+        return derive_keys_from_seed(seed)
+
+    @pytest.fixture
+    def bob_keys(self):
+        """Bob's key pair."""
+        seed = bytes.fromhex(BOB_SEED_HEX)
+        return derive_keys_from_seed(seed)
+
+    def test_layout_constants(self) -> None:
+        """Standard header stays 126 and the tag stays 16."""
+        assert HEADER_SIZE == 126
+        assert TAG_SIZE == 16
+        assert MAX_NOTE_SIZE == 4096
+        assert MAX_PAYLOAD_SIZE == 3954
+        assert MAX_PAYLOAD_SIZE == MAX_NOTE_SIZE - HEADER_SIZE - TAG_SIZE
+
+    def test_legacy_882_byte_plaintext_succeeds(self, alice_keys, bob_keys) -> None:
+        """An 882-byte plaintext still encrypts, and the note is at most 1024 bytes."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        message = "A" * 882
+
+        envelope = encrypt_message(message, alice_private, alice_public, bob_public)
+        encoded = encode_envelope(envelope)
+
+        assert len(encoded) == HEADER_SIZE + 882 + TAG_SIZE
+        assert len(encoded) <= 1024
+        decoded = decode_envelope(encoded)
+        result = decrypt_message(decoded, bob_private, bob_public)
+        assert result is not None
+        assert result.text == message
+
+    def test_max_plaintext_encodes_to_4096(self, alice_keys, bob_keys) -> None:
+        """3954 bytes of plaintext encode to a note of exactly 4096 bytes."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        message = "A" * MAX_PAYLOAD_SIZE
+
+        envelope = encrypt_message(message, alice_private, alice_public, bob_public)
+        encoded = encode_envelope(envelope)
+
+        assert len(encoded) == 4096
+        assert len(encoded) == MAX_NOTE_SIZE
+        decoded = decode_envelope(encoded)
+        result = decrypt_message(decoded, bob_private, bob_public)
+        assert result is not None
+        assert result.text == message
+
+    def test_one_extra_byte_fails_before_encoding(self, alice_keys, bob_keys) -> None:
+        """One byte past 3954 is rejected before a transaction can be built."""
+        alice_private, alice_public = alice_keys
+        _, bob_public = bob_keys
+
+        with pytest.raises(EncryptionError, match="too large"):
+            encrypt_message("A" * (MAX_PAYLOAD_SIZE + 1), alice_private, alice_public, bob_public)
+
+    def test_payment_fees_at_min_fee_1000(self) -> None:
+        """Note surcharge at minFee 1000 for 1024, 2000, and 4096 byte notes."""
+        assert payment_fee(1024, 1000) == 1000
+        assert payment_fee(2000, 1000) == 1098
+        assert payment_fee(4096, 1000) == 1308

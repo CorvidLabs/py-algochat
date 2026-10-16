@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from .types import MAX_NOTE_SIZE
+
 
 # Protocol constants
 PSK_VERSION = 0x01
@@ -9,7 +11,8 @@ PSK_PROTOCOL_ID = 0x02
 PSK_HEADER_SIZE = 130
 PSK_TAG_SIZE = 16
 PSK_ENCRYPTED_SENDER_KEY_SIZE = 48  # 32-byte key + 16-byte tag
-PSK_MAX_PAYLOAD_SIZE = 878
+# Header stays 130 and the Poly1305 tag stays 16, so plaintext max is 3950.
+PSK_MAX_PAYLOAD_SIZE = MAX_NOTE_SIZE - PSK_HEADER_SIZE - PSK_TAG_SIZE
 PSK_SESSION_SIZE = 100
 PSK_COUNTER_WINDOW = 200
 
