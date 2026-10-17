@@ -10,3 +10,4 @@ spec: algochat.spec.md
 - `REQ-algochat-003`: `test_psk.py`.
 - `REQ-algochat-004`: `test_storage.py`, `test_queue.py`, `test_signature.py`, `test_blockchain.py`, and `test_client.py`.
 - `REQ-algochat-005`: the Fledge `verify` lane runs Ruff and Pytest; the pinned SpecSync 5.0.1 workflow gate runs strict lifecycle validation at 100% coverage before Trust.
+- `REQ-algochat-006`: `test_crypto.py` and `test_psk.py`.

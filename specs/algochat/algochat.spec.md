@@ -33,7 +33,7 @@ Implement encrypted AlgoChat messaging for Algorand in Python, including interop
 
 ## Public API
 
-The `algochat` package exports the existing client, model, cryptographic, envelope, PSK, queue, signature, storage, and transport interfaces. These contracts describe the current implementation without changing runtime behavior.
+The `algochat` package exports the client, model, cryptographic, envelope, PSK, queue, signature, storage, and transport interfaces.
 
 | Export | Contract |
 |---|---|
@@ -83,6 +83,8 @@ The `algochat` package exports the existing client, model, cryptographic, envelo
 | `StorageError` | Reports a key or message storage operation failure. |
 | `MessageNotFoundError` | Reports that a requested message is absent. |
 | `MINIMUM_PAYMENT` | Defines the 1,000 microAlgo payment used to carry an AlgoChat note. |
+| `payment_fee` | Returns the microAlgo fee for a note-carrying payment. The first 1024 bytes cost one minimum fee. Each byte past 1024 adds one ten-thousandth of the minimum fee, rounded up once. There is no Falcon signer, so the scheme component is one minimum fee. |
+| `MAX_NOTE_SIZE` | Caps an AlgoChat transaction note at 4096 bytes. |
 | `QueueConfig` | Configures queue retries, retry delay, and processing behavior. |
 | `SendQueue` | Manages asynchronous persistence and delivery of pending outgoing messages. |
 | `AlgorandConfig` | Configures algod and indexer connection endpoints and credentials. |
@@ -100,7 +102,7 @@ The `algochat` package exports the existing client, model, cryptographic, envelo
 | `PSK_HEADER_SIZE` | Defines the PSK fixed header length as 130 bytes. |
 | `PSK_TAG_SIZE` | Defines the PSK authentication-tag length as 16 bytes. |
 | `PSK_ENCRYPTED_SENDER_KEY_SIZE` | Defines the encrypted sender-key field as 48 bytes. |
-| `PSK_MAX_PAYLOAD_SIZE` | Caps a PSK envelope payload at 878 bytes. |
+| `PSK_MAX_PAYLOAD_SIZE` | Caps a PSK envelope payload at 3950 bytes. |
 | `PSK_SESSION_SIZE` | Groups 100 ratchet positions into one derived PSK session. |
 | `PSK_COUNTER_WINDOW` | Allows a 200-counter receive window for replay-safe out-of-order delivery. |
 | `PSKEnvelope` | Stores PSK envelope counters, keys, nonce, ciphertext, and authentication tag. |
@@ -133,7 +135,7 @@ The `algochat` package exports the existing client, model, cryptographic, envelo
 | `HEADER_SIZE` | Defines the standard fixed header length as 126 bytes. |
 | `TAG_SIZE` | Defines the standard authentication-tag length as 16 bytes. |
 | `ENCRYPTED_SENDER_KEY_SIZE` | Defines the encrypted sender-key field as 48 bytes. |
-| `MAX_PAYLOAD_SIZE` | Caps a standard envelope payload at 882 bytes. |
+| `MAX_PAYLOAD_SIZE` | Caps a standard envelope payload at 3954 bytes. |
 | `NONCE_SIZE` | Defines ChaCha20-Poly1305 nonces as 12 bytes. |
 | `PUBLIC_KEY_SIZE` | Defines serialized X25519 public keys as 32 bytes. |
 | `KEY_DERIVATION_SALT` | Supplies the fixed `AlgoChat-v1-encryption` HKDF salt for seed derivation. |
@@ -164,6 +166,8 @@ The PSK v1.1 surface covers wire constants, hierarchical ratchet derivation, hyb
 3. PSK counters derive deterministic per-message keys, reject replays, allow the configured out-of-order window, and prune obsolete receive state.
 4. File key storage encrypts private material at rest and preserves the interoperable salt, nonce, ciphertext, and tag layout; in-memory storage remains test-only.
 5. Blockchain, queue, and client abstractions preserve asynchronous ordering and do not silently discard protocol errors.
+6. A standard plaintext is at most 3954 bytes and a PSK plaintext is at most 3950 bytes. Those maxima encode to a 4096-byte note. One extra byte is rejected before a transaction is built. Headers stay 126 and 130 bytes, and the Poly1305 tag stays 16 bytes. Plaintexts of 882 and 878 bytes still encrypt, and those notes stay at most 1024 bytes.
+7. A note payment fee is one minimum fee plus the consensus surcharge for bytes past 1024. With a minimum fee of 1000 microAlgos, notes of 1024, 2000, and 4096 bytes cost 1000, 1098, and 1308 microAlgos. This library does not add a Falcon signer.
 
 ## Behavioral Examples
 
@@ -171,6 +175,14 @@ The PSK v1.1 surface covers wire constants, hierarchical ratchet derivation, hyb
 Given two AlgoChat key pairs and an authenticated plaintext
 When the sender encrypts and encodes an envelope for the recipient
 Then the recipient decodes and decrypts the original plaintext and tampering fails authentication
+
+Given a standard plaintext of 3954 bytes or a PSK plaintext of 3950 bytes
+When the sender encrypts and encodes the envelope
+Then the note is 4096 bytes, and one extra plaintext byte is rejected before a transaction is built
+
+Given minimum fee 1000 and notes of 1024, 2000, and 4096 bytes
+When the payment fee is chosen
+Then the fees are 1000, 1098, and 1308 microAlgos
 ```
 
 ## Error Cases
@@ -181,6 +193,7 @@ Then the recipient decodes and decrypts the original plaintext and tampering fai
 | Authentication failure | Ciphertext, associated data, key material, or signature is invalid | Raise the existing protocol error |
 | Replay | A PSK receive counter was already processed or is outside the accepted window | Reject the message and preserve valid state |
 | Missing key or message | Storage, queue, or transport lookup cannot resolve the requested item | Return or raise the existing explicit absence result |
+| Message too large | Plaintext exceeds 3954 bytes (standard) or 3950 bytes (PSK) | Reject before a transaction is built |
 
 ## Dependencies
 
@@ -197,6 +210,7 @@ Then the recipient decodes and decrypts the original plaintext and tampering fai
 | 2026-07-13 | CHG-0003-correct-the-python-algochat-lifecycle-gate-execution-order-after-hosted-trust-va: Correct the Python AlgoChat lifecycle gate execution order after hosted Trust validation |
 | 2026-07-13 | CHG-0004-replace-generic-python-algochat-export-descriptions-with-precise-implementation: Replace generic Python AlgoChat export descriptions with precise implementation-backed contracts |
 | 2026-07-13 | CHG-0007-correct-python-algochat-contract-rows-fixture-evidence-and-free-text-agent-gui: Correct Python AlgoChat contract rows, fixture evidence, and free-text agent guidance |
+| 2026-10-16 | Raise the AlgoChat note ceiling to 4096 bytes. Standard plaintext max is 3954. PSK plaintext max is 3950. Note fees add the consensus surcharge above 1024 bytes on top of one minimum fee. |
 
 ## Corrected Model and Discovery Contracts
 

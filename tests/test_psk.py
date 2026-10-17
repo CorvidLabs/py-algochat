@@ -6,8 +6,11 @@ from algochat.psk_types import (
     PSK_VERSION,
     PSK_PROTOCOL_ID,
     PSK_HEADER_SIZE,
+    PSK_TAG_SIZE,
+    PSK_MAX_PAYLOAD_SIZE,
     PSKEnvelope,
 )
+from algochat.types import MAX_NOTE_SIZE, PSKEncryptionError
 from algochat.psk_ratchet import (
     derive_session_psk,
     derive_position_psk,
@@ -291,6 +294,75 @@ class TestPSKEncryptDecrypt:
 
         result = decrypt_psk_message(envelope, bob_private, bob_public, psk)
         assert result == ""
+
+    def test_layout_constants(self) -> None:
+        """PSK header stays 130 and the tag stays 16."""
+        assert PSK_HEADER_SIZE == 130
+        assert PSK_TAG_SIZE == 16
+        assert PSK_MAX_PAYLOAD_SIZE == 3950
+        assert PSK_MAX_PAYLOAD_SIZE == MAX_NOTE_SIZE - PSK_HEADER_SIZE - PSK_TAG_SIZE
+
+    def test_legacy_878_byte_plaintext_succeeds(self, alice_keys, bob_keys) -> None:
+        """An 878-byte plaintext still encrypts, and the note is at most 1024 bytes."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+        message = "A" * 878
+
+        envelope = encrypt_psk_message(
+            message,
+            alice_private,
+            alice_public,
+            bob_public,
+            psk,
+            0,
+        )
+        encoded = encode_psk_envelope(envelope)
+
+        assert len(encoded) == PSK_HEADER_SIZE + 878 + PSK_TAG_SIZE
+        assert len(encoded) <= 1024
+        decoded = decode_psk_envelope(encoded)
+        result = decrypt_psk_message(decoded, bob_private, bob_public, psk)
+        assert result == message
+
+    def test_max_plaintext_encodes_to_4096(self, alice_keys, bob_keys) -> None:
+        """3950 bytes of plaintext encode to a note of exactly 4096 bytes."""
+        alice_private, alice_public = alice_keys
+        bob_private, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+        message = "A" * PSK_MAX_PAYLOAD_SIZE
+
+        envelope = encrypt_psk_message(
+            message,
+            alice_private,
+            alice_public,
+            bob_public,
+            psk,
+            0,
+        )
+        encoded = encode_psk_envelope(envelope)
+
+        assert len(encoded) == 4096
+        assert len(encoded) == MAX_NOTE_SIZE
+        decoded = decode_psk_envelope(encoded)
+        result = decrypt_psk_message(decoded, bob_private, bob_public, psk)
+        assert result == message
+
+    def test_one_extra_byte_fails_before_encoding(self, alice_keys, bob_keys) -> None:
+        """One byte past 3950 is rejected before a transaction can be built."""
+        alice_private, alice_public = alice_keys
+        _, bob_public = bob_keys
+        psk = derive_psk_at_counter(TEST_PSK, 0)
+
+        with pytest.raises(PSKEncryptionError, match="too large"):
+            encrypt_psk_message(
+                "A" * (PSK_MAX_PAYLOAD_SIZE + 1),
+                alice_private,
+                alice_public,
+                bob_public,
+                psk,
+                0,
+            )
 
 
 class TestPSKState:
