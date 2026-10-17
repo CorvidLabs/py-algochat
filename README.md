@@ -1,3 +1,5 @@
+> **This repository has moved.** Development continues in [CorvidLabs/algochat](https://github.com/CorvidLabs/algochat) in the [`py/`](https://github.com/CorvidLabs/algochat/tree/main/py) directory. This copy stays public so existing package versions keep resolving. Open new work in the monorepo.
+
 # py-algochat
 
 [![CI](https://img.shields.io/github/actions/workflow/status/CorvidLabs/py-algochat/ci.yml?label=CI&branch=main)](https://github.com/CorvidLabs/py-algochat/actions/workflows/ci.yml)
